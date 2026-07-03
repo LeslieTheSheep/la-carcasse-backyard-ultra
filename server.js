@@ -30,6 +30,11 @@ app.put('/api/runners/:name/nickname', (req, res) => {
 });
 
 // DNF manuel
+app.put('/api/runners/:name/photo', (req, res) => {
+  const { photo } = req.body;
+  res.json(db.updatePhoto(req.params.name, photo));
+});
+
 app.post('/api/runners/:name/dnf', (req, res) => res.json(db.setDNF(req.params.name)));
 app.delete('/api/runners/:name/dnf', (req, res) => res.json(db.cancelDNF(req.params.name)));
 

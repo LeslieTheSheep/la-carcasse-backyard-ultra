@@ -33,7 +33,7 @@ db.exec(`
 
 ['nickname TEXT','bib_number INTEGER','active INTEGER DEFAULT 1',
  'dnf INTEGER DEFAULT 0','dnf_at INTEGER','dnf_reason TEXT',
- 'checkpoint_split_seconds INTEGER'].forEach(col => {
+ 'photo TEXT','checkpoint_split_seconds INTEGER'].forEach(col => {
   try { db.exec(`ALTER TABLE runners ADD COLUMN ${col}`); } catch(e) {}
   try { db.exec(`ALTER TABLE loops ADD COLUMN ${col}`); } catch(e) {}
 });
@@ -43,6 +43,12 @@ function getOrCreateRunner(name) {
   if (existing) return existing;
   const result = db.prepare('INSERT INTO runners (name) VALUES (?)').run(name);
   return db.prepare('SELECT * FROM runners WHERE id = ?').get(result.lastInsertRowid);
+}
+
+function updatePhoto(name, photoData) {
+  getOrCreateRunner(name);
+  db.prepare('UPDATE runners SET photo = ? WHERE name = ?').run(photoData || null, name);
+  return { ok: true };
 }
 
 function updateNickname(name, nickname) {
@@ -135,7 +141,7 @@ function processScan(runnerName, point) {
 
 function getLeaderboard() {
   return db.prepare(`
-    SELECT r.id, r.name, r.nickname, r.bib_number, r.state, r.active, r.dnf, r.dnf_at, r.dnf_reason,
+    SELECT r.id, r.name, r.nickname, r.bib_number, r.photo, r.state, r.active, r.dnf, r.dnf_at, r.dnf_reason,
       r.loop_start_time, r.loop_checkpoint_time,
       COUNT(l.id) as loops,
       MIN(l.duration_seconds) as best_time,
@@ -166,6 +172,6 @@ function resetAll() {
   db.exec(`DELETE FROM loops`);
 }
 
-module.exports = { getOrCreateRunner, getAllRunners, getParticipants, updateNickname, importParticipants,
+module.exports = { getOrCreateRunner, getAllRunners, getParticipants, updateNickname, updatePhoto, importParticipants,
   processScan, getLeaderboard, getRunnerLoops, deleteRunner, resetAll, setDNF, cancelDNF,
   eliminateLateRunners, LOOP_KM, HALF_KM };

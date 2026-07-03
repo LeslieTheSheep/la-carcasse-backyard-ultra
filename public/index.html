@@ -299,10 +299,13 @@ function stateInfo(state) {
   }[state] || { label:state, cls:'pill-go', icon:'ti-help' };
 }
 
-function getPhoto(name) { return localStorage.getItem('photo_'+name)||null; }
+function getPhoto(name, serverPhoto) {
+  // Priorité : photo du serveur, puis localStorage
+  return serverPhoto || localStorage.getItem('photo_'+name) || null;
+}
 
-function avatarEl(name) {
-  const p = getPhoto(name);
+function avatarEl(name, serverPhoto) {
+  const p = getPhoto(name, serverPhoto);
   return p ? `<img src="${p}">` : `<i class="ti ti-user"></i>`;
 }
 
@@ -322,7 +325,7 @@ async function openRunnerDetail(name) {
     const runner = runners.find(r => r.name === name);
     if (!runner) { document.getElementById('modal-content').innerHTML = '<p style="color:var(--muted)">Données introuvables.</p>'; return; }
 
-    const photo = getPhoto(name);
+    const photo = getPhoto(name, runner?.photo);
     const displayName = runner.nickname || runner.name;
     const avgPaceSec = loops.length ? loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length : null;
 
@@ -698,7 +701,7 @@ function renderClassement(runners) {
     return `
     <div class="rank-card ${r.dnf?'dnf-card':rank<=3?'r'+rank:''}" onclick="openRunnerDetail('${r.name.replace(/'/g,"\\'")}')">
       <div class="rank-num">${r.dnf?'DNF':rank<=3?medals[rank-1]:'#'+rank}</div>
-      <div class="rank-av">${avatarEl(r.name)}</div>
+      <div class="rank-av">${avatarEl(r.name, r.photo)}</div>
       <div class="rank-info">
         <div class="rank-name">${displayName}</div>
         <div class="rank-detail">
@@ -769,7 +772,8 @@ async function renderProfil() {
       }
     }
 
-    const photo = getPhoto(myName);
+    const meData = runners.find(r => r.name === myName);
+    const photo = getPhoto(myName, meData?.photo);
     document.getElementById('profile-photo-el').innerHTML = photo ? `<img src="${photo}">` : `<i class="ti ti-user"></i>`;
 
     if (loops.length > 0) {
@@ -840,7 +844,21 @@ async function saveNickname() {
 function handlePhoto(input) {
   const file = input.files[0]; if (!file) return;
   const reader = new FileReader();
-  reader.onload = e => { localStorage.setItem('photo_'+myName, e.target.result); renderProfil(); loadData(); };
+  reader.onload = async e => {
+    const photoData = e.target.result;
+    // Sauvegarder en local
+    localStorage.setItem('photo_'+myName, photoData);
+    // Envoyer au serveur (visible par tous)
+    try {
+      await fetch('/api/runners/'+encodeURIComponent(myName)+'/photo', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photo: photoData })
+      });
+    } catch(e) { console.error('Erreur upload photo:', e); }
+    await loadData();
+    renderProfil();
+  };
   reader.readAsDataURL(file);
 }
 
