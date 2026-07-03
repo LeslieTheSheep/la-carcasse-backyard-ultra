@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080810">
+  <title>Scan — La Carcasse</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+</head>
+<body>
+<div class="scan-page">
+  <div class="scan-logo"><img src="logo.png" alt="La Carcasse"></div>
+
+  <!-- Pas identifié -->
+  <div id="s-norunner" style="display:none;width:100%;max-width:340px;text-align:center">
+    <i class="ti ti-user-question" style="font-size:64px;color:var(--muted);margin-bottom:16px;display:block"></i>
+    <div style="font-size:20px;font-weight:700;margin-bottom:8px">Pas identifié</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:24px">Tu dois d'abord te connecter dans l'application.</div>
+    <a href="/" class="btn btn-accent"><i class="ti ti-arrow-left"></i> Ouvrir l'app</a>
+  </div>
+
+  <!-- Chargement -->
+  <div id="s-loading" style="display:none;text-align:center">
+    <div id="s-point-label" class="scan-badge"></div>
+    <div id="s-runner-label" class="scan-runner-lbl"></div>
+    <div style="color:var(--muted);font-size:15px;display:flex;align-items:center;gap:8px;justify-content:center">
+      <i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Enregistrement...
+    </div>
+  </div>
+
+  <!-- Résultat -->
+  <div id="s-result" style="display:none;width:100%;max-width:360px;text-align:center">
+    <div id="s-result-icon" style="font-size:56px;margin-bottom:10px"></div>
+    <div id="s-result-point" class="scan-badge" style="margin-bottom:4px"></div>
+    <div id="s-result-runner" class="scan-runner-lbl"></div>
+    <div id="s-result-msg" class="scan-result-box"></div>
+
+    <!-- Infos contextuelles selon le type de scan -->
+    <div id="s-context-box" style="display:none;width:100%;margin-bottom:20px"></div>
+
+    <!-- Bouton retour app bien visible -->
+    <a href="/" class="btn btn-accent" style="margin-bottom:10px">
+      <i class="ti ti-layout-dashboard"></i> Retour à l'application
+    </a>
+    <div class="scan-links">
+      <a href="/" class="scan-link"><i class="ti ti-trophy"></i> Classement live</a>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+.context-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px; margin-bottom: 4px;
+}
+.context-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.context-row:last-child { border-bottom: none; }
+.context-label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.context-val { font-size: 18px; font-weight: 800; }
+</style>
+
+<script>
+const LOOP_KM = 6.0;
+
+function fmtTime(s) {
+  if (!s && s !== 0) return '--';
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  if (h > 0) return `${h}h ${m}m ${sec}s`;
+  if (m > 0) return `${m}m ${sec}s`;
+  return `${sec}s`;
+}
+
+function pace(seconds) {
+  const totalMin = seconds / 60 / LOOP_KM;
+  const m = Math.floor(totalMin), s = Math.round((totalMin - m) * 60);
+  return `${m}'${String(s).padStart(2,'0')}"`;
+}
+
+// Chrono live (pour afficher le temps qui passe après le scan)
+let timerInterval = null;
+function startContextTimer(startMs, el, extraHtml) {
+  function update() {
+    const elapsed = Math.round((Date.now() - startMs) / 1000);
+    el.innerHTML = extraHtml(elapsed);
+  }
+  update();
+  timerInterval = setInterval(update, 1000);
+}
+
+async function doScan() {
+  const name = localStorage.getItem('backyard_runner');
+  const point = new URLSearchParams(window.location.search).get('point');
+
+  if (!name) { document.getElementById('s-norunner').style.display = 'block'; return; }
+
+  const label = point === 'start' ? 'START' : 'CHECKPOINT';
+
+  // Afficher chargement
+  document.getElementById('s-loading').style.display = 'block';
+  const pl = document.getElementById('s-point-label');
+  pl.textContent = label; pl.className = 'scan-badge ' + point;
+  document.getElementById('s-runner-label').textContent = name;
+
+  try {
+    const res = await fetch('/api/scan', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, point })
+    });
+    const data = await res.json();
+
+    document.getElementById('s-loading').style.display = 'none';
+    document.getElementById('s-result').style.display = 'block';
+
+    document.getElementById('s-result-icon').textContent =
+      data.loop_validated ? '🏆' : data.ok ? '✅' : '⚠️';
+    const rp = document.getElementById('s-result-point');
+    rp.textContent = label; rp.className = 'scan-badge ' + point;
+    document.getElementById('s-result-runner').textContent = name;
+    const msg = document.getElementById('s-result-msg');
+    msg.textContent = data.message;
+    msg.className = 'scan-result-box ' + (data.ok ? 'ok' : 'error');
+
+    // ---- INFOS CONTEXTUELLES ----
+    const ctxBox = document.getElementById('s-context-box');
+
+    if (data.ok && point === 'checkpoint' && data.elapsed_seconds !== undefined) {
+      // Arrivée au checkpoint : mi-parcours
+      ctxBox.style.display = 'block';
+      const elapsed = data.elapsed_seconds;
+      const projected = elapsed * 2; // estimation boucle complète
+      ctxBox.innerHTML = `
+        <div class="context-card">
+          <div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">
+            <i class="ti ti-flag-2"></i> Mi-parcours — 3 km
+          </div>
+          <div class="context-row">
+            <div class="context-label">Temps de passage</div>
+            <div class="context-val" style="color:var(--green)" id="ctx-elapsed">${fmtTime(elapsed)}</div>
+          </div>
+          <div class="context-row">
+            <div class="context-label">Allure 1ère moitié</div>
+            <div class="context-val" style="color:var(--blue)">${pace(elapsed * 2)}<span style="font-size:12px;color:var(--muted)"> /km</span></div>
+          </div>
+          <div class="context-row">
+            <div class="context-label">Projection boucle</div>
+            <div class="context-val" style="color:var(--amber)">${fmtTime(projected)}</div>
+          </div>
+        </div>`;
+      // Timer live depuis le début de la boucle
+      if (data.loop_start_time) {
+        startContextTimer(data.loop_start_time, document.getElementById('ctx-elapsed'), (s) =>
+          `<span style="color:var(--green)">${fmtTime(s)}</span>`
+        );
+      }
+
+    } else if (data.ok && data.loop_validated && data.duration) {
+      // Fin de boucle validée
+      ctxBox.style.display = 'block';
+      const dur = data.duration;
+      ctxBox.innerHTML = `
+        <div class="context-card">
+          <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">
+            <i class="ti ti-circle-check"></i> Boucle complétée — 6 km
+          </div>
+          <div class="context-row">
+            <div class="context-label">Temps de boucle</div>
+            <div class="context-val" style="color:var(--green)">${fmtTime(dur)}</div>
+          </div>
+          <div class="context-row">
+            <div class="context-label">Allure moyenne</div>
+            <div class="context-val" style="color:var(--blue)">${pace(dur)}<span style="font-size:12px;color:var(--muted)"> /km</span></div>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid #166534;border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Temps de repos</div>
+          <div id="rest-timer" style="font-size:28px;font-weight:900;color:var(--green);font-variant-numeric:tabular-nums">00:00</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">depuis ton arrivée</div>
+        </div>`;
+      // Chrono de repos (temps depuis la fin de la boucle)
+      const finishTime = Date.now();
+      setInterval(() => {
+        const restSec = Math.floor((Date.now() - finishTime) / 1000);
+        const m = Math.floor(restSec / 60), s = restSec % 60;
+        const el = document.getElementById('rest-timer');
+        if (el) el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      }, 1000);
+
+    } else if (data.ok && point === 'start' && !data.loop_validated) {
+      // Nouveau départ
+      ctxBox.style.display = 'block';
+      ctxBox.innerHTML = `
+        <div class="context-card">
+          <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">
+            <i class="ti ti-run"></i> Boucle en cours
+          </div>
+          <div class="context-row">
+            <div class="context-label">Temps écoulé</div>
+            <div class="context-val" id="ctx-running">0s</div>
+          </div>
+        </div>`;
+      startContextTimer(Date.now(), document.getElementById('ctx-running'), (s) =>
+        `<span style="color:var(--green)">${fmtTime(s)}</span>`
+      );
+    }
+
+  } catch(e) {
+    document.getElementById('s-loading').style.display = 'none';
+    document.getElementById('s-result').style.display = 'block';
+    document.getElementById('s-result-icon').textContent = '❌';
+    document.getElementById('s-result-msg').textContent = 'Erreur réseau. Vérifie ta connexion.';
+    document.getElementById('s-result-msg').className = 'scan-result-box error';
+  }
+}
+
+doScan();
+</script>
+</body>
+</html>
