@@ -659,7 +659,7 @@ function runnerCardHtml(r, isDnf) {
     ? Math.round((r.loop_checkpoint_time - r.loop_start_time) / 1000) : null;
   return `
   <div class="runner-card ${isDnf?'dnf-card':''}" onclick="openRunnerDetail('${r.name.replace(/'/g,"\\'")}')">
-    <div class="r-avatar">${avatarEl(r.name)}</div>
+    <div class="r-avatar">${avatarEl(r.name, r.photo)}</div>
     <div class="r-main">
       <div class="r-name" style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
         <span>${displayName}</span>

@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#080810">
   <title>Scan — La Carcasse</title>
+  <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 </head>
 <body>
@@ -39,16 +39,22 @@
     <div id="s-result-runner" class="scan-runner-lbl"></div>
     <div id="s-result-msg" class="scan-result-box"></div>
 
-    <!-- Infos contextuelles selon le type de scan -->
-    <div id="s-context-box" style="display:none;width:100%;margin-bottom:20px"></div>
+    <!-- Infos contextuelles -->
+    <div id="s-context-box" style="display:none;width:100%;margin-bottom:16px"></div>
 
-    <!-- Bouton retour app bien visible -->
-    <a href="/" class="btn btn-accent" style="margin-bottom:10px">
+    <!-- Compte à rebours fermeture -->
+    <div id="s-countdown-box" style="margin-bottom:16px;display:none">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Retour à l'application dans</div>
+      <div id="s-countdown-val" style="font-size:36px;font-weight:900;color:var(--accent)">4</div>
+      <div style="width:100%;height:4px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden">
+        <div id="s-progress-bar" style="height:100%;background:var(--accent);width:100%;transition:width 1s linear;border-radius:2px"></div>
+      </div>
+    </div>
+
+    <!-- Bouton retour manuel -->
+    <a href="/" class="btn btn-accent" style="margin-bottom:10px" id="s-back-btn">
       <i class="ti ti-layout-dashboard"></i> Retour à l'application
     </a>
-    <div class="scan-links">
-      <a href="/" class="scan-link"><i class="ti ti-trophy"></i> Classement live</a>
-    </div>
   </div>
 </div>
 
@@ -69,6 +75,8 @@
 
 <script>
 const LOOP_KM = 6.0;
+const APP_URL = '/';
+const REDIRECT_DELAY = 4; // secondes avant redirection
 
 function fmtTime(s) {
   if (!s && s !== 0) return '--';
@@ -84,15 +92,31 @@ function pace(seconds) {
   return `${m}'${String(s).padStart(2,'0')}"`;
 }
 
-// Chrono live (pour afficher le temps qui passe après le scan)
-let timerInterval = null;
-function startContextTimer(startMs, el, extraHtml) {
-  function update() {
-    const elapsed = Math.round((Date.now() - startMs) / 1000);
-    el.innerHTML = extraHtml(elapsed);
-  }
-  update();
-  timerInterval = setInterval(update, 1000);
+// Ferme l'onglet et retourne à l'app après le délai
+function startAutoRedirect() {
+  const countdownBox = document.getElementById('s-countdown-box');
+  const countdownVal = document.getElementById('s-countdown-val');
+  const progressBar = document.getElementById('s-progress-bar');
+  countdownBox.style.display = 'block';
+
+  let remaining = REDIRECT_DELAY;
+  countdownVal.textContent = remaining;
+
+  // Lancer la barre de progression
+  setTimeout(() => { progressBar.style.width = '0%'; }, 50);
+
+  const interval = setInterval(() => {
+    remaining--;
+    countdownVal.textContent = remaining;
+    if (remaining <= 0) {
+      clearInterval(interval);
+      // Essayer de fermer l'onglet
+      window.close();
+      // Si ça ne marche pas (la plupart des navigateurs bloquent ça),
+      // rediriger vers l'app
+      setTimeout(() => { window.location.href = APP_URL; }, 300);
+    }
+  }, 1000);
 }
 
 async function doScan() {
@@ -102,8 +126,6 @@ async function doScan() {
   if (!name) { document.getElementById('s-norunner').style.display = 'block'; return; }
 
   const label = point === 'start' ? 'START' : 'CHECKPOINT';
-
-  // Afficher chargement
   document.getElementById('s-loading').style.display = 'block';
   const pl = document.getElementById('s-point-label');
   pl.textContent = label; pl.className = 'scan-badge ' + point;
@@ -132,10 +154,8 @@ async function doScan() {
     const ctxBox = document.getElementById('s-context-box');
 
     if (data.ok && point === 'checkpoint' && data.elapsed_seconds !== undefined) {
-      // Arrivée au checkpoint : mi-parcours
       ctxBox.style.display = 'block';
       const elapsed = data.elapsed_seconds;
-      const projected = elapsed * 2; // estimation boucle complète
       ctxBox.innerHTML = `
         <div class="context-card">
           <div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">
@@ -143,7 +163,7 @@ async function doScan() {
           </div>
           <div class="context-row">
             <div class="context-label">Temps de passage</div>
-            <div class="context-val" style="color:var(--green)" id="ctx-elapsed">${fmtTime(elapsed)}</div>
+            <div class="context-val" style="color:var(--green)">${fmtTime(elapsed)}</div>
           </div>
           <div class="context-row">
             <div class="context-label">Allure 1ère moitié</div>
@@ -151,18 +171,11 @@ async function doScan() {
           </div>
           <div class="context-row">
             <div class="context-label">Projection boucle</div>
-            <div class="context-val" style="color:var(--amber)">${fmtTime(projected)}</div>
+            <div class="context-val" style="color:var(--amber)">${fmtTime(elapsed * 2)}</div>
           </div>
         </div>`;
-      // Timer live depuis le début de la boucle
-      if (data.loop_start_time) {
-        startContextTimer(data.loop_start_time, document.getElementById('ctx-elapsed'), (s) =>
-          `<span style="color:var(--green)">${fmtTime(s)}</span>`
-        );
-      }
 
     } else if (data.ok && data.loop_validated && data.duration) {
-      // Fin de boucle validée
       ctxBox.style.display = 'block';
       const dur = data.duration;
       ctxBox.innerHTML = `
@@ -178,37 +191,12 @@ async function doScan() {
             <div class="context-label">Allure moyenne</div>
             <div class="context-val" style="color:var(--blue)">${pace(dur)}<span style="font-size:12px;color:var(--muted)"> /km</span></div>
           </div>
-        </div>
-        <div style="background:var(--card);border:1px solid #166534;border-radius:12px;padding:14px;text-align:center">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Temps de repos</div>
-          <div id="rest-timer" style="font-size:28px;font-weight:900;color:var(--green);font-variant-numeric:tabular-nums">00:00</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:3px">depuis ton arrivée</div>
         </div>`;
-      // Chrono de repos (temps depuis la fin de la boucle)
-      const finishTime = Date.now();
-      setInterval(() => {
-        const restSec = Math.floor((Date.now() - finishTime) / 1000);
-        const m = Math.floor(restSec / 60), s = restSec % 60;
-        const el = document.getElementById('rest-timer');
-        if (el) el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-      }, 1000);
+    }
 
-    } else if (data.ok && point === 'start' && !data.loop_validated) {
-      // Nouveau départ
-      ctxBox.style.display = 'block';
-      ctxBox.innerHTML = `
-        <div class="context-card">
-          <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">
-            <i class="ti ti-run"></i> Boucle en cours
-          </div>
-          <div class="context-row">
-            <div class="context-label">Temps écoulé</div>
-            <div class="context-val" id="ctx-running">0s</div>
-          </div>
-        </div>`;
-      startContextTimer(Date.now(), document.getElementById('ctx-running'), (s) =>
-        `<span style="color:var(--green)">${fmtTime(s)}</span>`
-      );
+    // Lancer la redirection automatique uniquement si le scan est OK
+    if (data.ok) {
+      startAutoRedirect();
     }
 
   } catch(e) {
@@ -217,6 +205,7 @@ async function doScan() {
     document.getElementById('s-result-icon').textContent = '❌';
     document.getElementById('s-result-msg').textContent = 'Erreur réseau. Vérifie ta connexion.';
     document.getElementById('s-result-msg').className = 'scan-result-box error';
+    // Pas de redirection automatique en cas d'erreur
   }
 }
 
