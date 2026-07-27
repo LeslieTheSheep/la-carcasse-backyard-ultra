@@ -125,7 +125,7 @@ async function doScan() {
 
   if (!name) { document.getElementById('s-norunner').style.display = 'block'; return; }
 
-  const label = point === 'start' ? 'START' : 'CHECKPOINT';
+  const label = point === 'start' ? 'ARRIVÉE' : 'CHECKPOINT';
   document.getElementById('s-loading').style.display = 'block';
   const pl = document.getElementById('s-point-label');
   pl.textContent = label; pl.className = 'scan-badge ' + point;

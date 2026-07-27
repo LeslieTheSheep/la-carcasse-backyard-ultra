@@ -70,6 +70,24 @@ function cancelDNF(name) {
 }
 
 // Élimination automatique : DNF tous les coureurs pas encore revenus au START
+// Démarre automatiquement une nouvelle boucle pour tous les coureurs actifs
+function startNewLoopForAll(now) {
+  // Coureurs actifs, pas DNF, en attente du start (boucle précédente terminée ou début de course)
+  const runners = db.prepare(`
+    SELECT * FROM runners WHERE dnf=0 AND state='waiting_start'
+  `).all();
+
+  const stmt = db.prepare(`
+    UPDATE runners SET state='waiting_checkpoint', loop_start_time=? WHERE id=?
+  `);
+
+  const tx = db.transaction((list) => {
+    list.forEach(r => stmt.run(now, r.id));
+  });
+  tx(runners);
+  return runners.length;
+}
+
 function eliminateLateRunners() {
   const lateRunners = db.prepare(`
     SELECT * FROM runners WHERE dnf=0 AND state != 'waiting_start'
@@ -172,6 +190,6 @@ function resetAll() {
   db.exec(`DELETE FROM loops`);
 }
 
-module.exports = { getOrCreateRunner, getAllRunners, getParticipants, updateNickname, updatePhoto, importParticipants,
+module.exports = { getOrCreateRunner, getAllRunners, getParticipants, updateNickname, updatePhoto, importParticipants, startNewLoopForAll,
   processScan, getLeaderboard, getRunnerLoops, deleteRunner, resetAll, setDNF, cancelDNF,
   eliminateLateRunners, LOOP_KM, HALF_KM };

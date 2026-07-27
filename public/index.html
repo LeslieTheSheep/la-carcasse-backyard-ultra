@@ -293,9 +293,9 @@ function pace(seconds) {
 
 function stateInfo(state) {
   return {
-    waiting_start:      { label:'En attente du START',  cls:'pill-go',    icon:'ti-circle-check' },
-    waiting_checkpoint: { label:'Route → CHECKPOINT',   cls:'pill-check', icon:'ti-route' },
-    waiting_end_start:  { label:'Retour → START',       cls:'pill-back',  icon:'ti-arrow-back' },
+    waiting_start:      { label:'En attente du départ', cls:'pill-go',    icon:'ti-clock' },
+    waiting_checkpoint: { label:'En route → CHECKPOINT', cls:'pill-check', icon:'ti-route' },
+    waiting_end_start:  { label:'Retour → ARRIVÉE',      cls:'pill-back',  icon:'ti-flag-filled' },
   }[state] || { label:state, cls:'pill-go', icon:'ti-help' };
 }
 

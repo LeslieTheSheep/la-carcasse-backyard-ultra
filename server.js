@@ -5,7 +5,6 @@ const db = require('./database');
 const app = express();
 const PORT = 3000;
 
-// Date/heure de départ officiel
 const RACE_START = new Date('2026-08-01T08:00:00');
 const LOOP_DURATION_MS = 60 * 60 * 1000; // 1 heure
 
@@ -30,16 +29,17 @@ app.put('/api/runners/:name/nickname', (req, res) => {
   res.json(db.updateNickname(req.params.name, req.body.nickname));
 });
 
-// DNF manuel
+// Photo
 app.put('/api/runners/:name/photo', (req, res) => {
   const { photo } = req.body;
   res.json(db.updatePhoto(req.params.name, photo));
 });
 
+// DNF
 app.post('/api/runners/:name/dnf', (req, res) => res.json(db.setDNF(req.params.name)));
 app.delete('/api/runners/:name/dnf', (req, res) => res.json(db.cancelDNF(req.params.name)));
 
-// Supprimer un coureur
+// Supprimer coureur
 app.delete('/api/runners/:name', (req, res) => {
   const ok = db.deleteRunner(req.params.name);
   if (!ok) return res.status(404).json({ ok: false });
@@ -48,11 +48,7 @@ app.delete('/api/runners/:name', (req, res) => {
 
 // Classement
 app.get('/api/leaderboard', (req, res) => res.json(db.getLeaderboard()));
-
-// Boucles d'un coureur
 app.get('/api/runner/:name/loops', (req, res) => res.json(db.getRunnerLoops(req.params.name)));
-
-// Participants
 app.get('/api/participants', (req, res) => res.json(db.getParticipants()));
 
 // Import participants
@@ -69,20 +65,17 @@ app.post('/api/admin/reset', (req, res) => {
   res.json({ ok: true });
 });
 
-// Infos course en temps réel (pour le header)
+// Infos course en temps réel
 app.get('/api/race-status', (req, res) => {
   const now = Date.now();
   const raceStartMs = RACE_START.getTime();
-
   if (now < raceStartMs) {
     return res.json({ status: 'before', ms_to_start: raceStartMs - now });
   }
-
   const elapsed = now - raceStartMs;
   const currentLoop = Math.floor(elapsed / LOOP_DURATION_MS) + 1;
   const msIntoLoop = elapsed % LOOP_DURATION_MS;
   const msToNextLoop = LOOP_DURATION_MS - msIntoLoop;
-
   res.json({
     status: 'running',
     current_loop: currentLoop,
@@ -91,23 +84,32 @@ app.get('/api/race-status', (req, res) => {
   });
 });
 
-// Élimination manuelle depuis l'admin
+// Élimination manuelle
 app.post('/api/admin/eliminate', (req, res) => {
   const count = db.eliminateLateRunners();
   res.json({ ok: true, eliminated: count });
 });
 
-// ---- ÉLIMINATION AUTOMATIQUE ----
-// Vérifie chaque minute si une heure vient de sonner
-function scheduleEliminations() {
+// ---- DÉMARRAGE AUTOMATIQUE DES BOUCLES ----
+function startLoopForAllRunners() {
+  const now = Date.now();
+  const count = db.startNewLoopForAll(now);
+  if (count > 0) console.log(`🏃 Boucle démarrée pour ${count} coureur(s)`);
+}
+
+// ---- ÉLIMINATION + DÉMARRAGE À CHAQUE HEURE PILE ----
+function scheduleNextHour() {
   const now = Date.now();
   const raceStartMs = RACE_START.getTime();
 
-  // Ne rien faire si la course n'a pas commencé
   if (now < raceStartMs) {
     const delay = raceStartMs - now;
-    console.log(`⏳ Course pas encore commencée. Première vérification dans ${Math.round(delay/60000)} minutes.`);
-    setTimeout(scheduleEliminations, Math.min(delay, 60000));
+    console.log(`⏳ Course pas encore commencée. Démarrage dans ${Math.round(delay/60000)} min.`);
+    setTimeout(() => {
+      console.log('\n🏁 DÉPART DE LA COURSE ! Boucle 1 lancée.');
+      startLoopForAllRunners();
+      scheduleNextHour();
+    }, delay);
     return;
   }
 
@@ -116,22 +118,21 @@ function scheduleEliminations() {
   const msIntoLoop = elapsed % LOOP_DURATION_MS;
   const msToNextLoop = LOOP_DURATION_MS - msIntoLoop;
 
-  // Planifier l'élimination à la prochaine heure pile
   setTimeout(() => {
     const loop = Math.floor((Date.now() - raceStartMs) / LOOP_DURATION_MS) + 1;
-    console.log(`\n💀 Heure ${loop} — Élimination automatique...`);
-    const count = db.eliminateLateRunners();
-    console.log(`   ${count} coureur(s) éliminé(s).\n`);
-    // Replanifier pour l'heure suivante
-    scheduleEliminations();
+    console.log(`\n💀 Heure ${loop} — Élimination + nouveau départ...`);
+    const eliminated = db.eliminateLateRunners();
+    console.log(`   ${eliminated} coureur(s) éliminé(s).`);
+    startLoopForAllRunners();
+    scheduleNextHour();
   }, msToNextLoop);
 
-  console.log(`⏱  Prochaine élimination dans ${Math.round(msToNextLoop/60000)} min`);
+  console.log(`⏱  Prochaine heure dans ${Math.round(msToNextLoop/60000)} min`);
 }
 
 app.listen(PORT, () => {
   console.log('\n💀 La Carcasse — App démarrée !');
   console.log(`👉 App   : http://localhost:${PORT}`);
   console.log(`👉 Admin : http://localhost:${PORT}/admin\n`);
-  scheduleEliminations();
+  scheduleNextHour();
 });
