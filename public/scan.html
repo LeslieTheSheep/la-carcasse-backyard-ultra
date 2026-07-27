@@ -148,7 +148,14 @@ async function doScan() {
     document.getElementById('s-result-runner').textContent = name;
     const msg = document.getElementById('s-result-msg');
     msg.textContent = data.message;
-    msg.className = 'scan-result-box ' + (data.ok ? 'ok' : 'error');
+    if (data.pre_race) {
+      msg.className = 'scan-result-box';
+      msg.style.background = '#1a1a2e';
+      msg.style.color = '#a78bfa';
+      msg.style.border = '1px solid #4c1d95';
+    } else {
+      msg.className = 'scan-result-box ' + (data.ok ? 'ok' : 'error');
+    }
 
     // ---- INFOS CONTEXTUELLES ----
     const ctxBox = document.getElementById('s-context-box');
@@ -194,8 +201,8 @@ async function doScan() {
         </div>`;
     }
 
-    // Lancer la redirection automatique uniquement si le scan est OK
-    if (data.ok) {
+    // Lancer la redirection automatique uniquement si le scan est OK et course commencée
+    if (data.ok && !data.pre_race) {
       startAutoRedirect();
     }
 

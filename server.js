@@ -5,8 +5,19 @@ const db = require('./database');
 const app = express();
 const PORT = 3000;
 
-const RACE_START = new Date('2026-08-01T08:00:00');
+const RACE_START = new Date('2026-08-01T08:00:00+02:00');
 const LOOP_DURATION_MS = 60 * 60 * 1000; // 1 heure
+
+// Système de simulation
+let simulationOffset = null; // null = pas de simulation, sinon = décalage en ms
+
+function getRaceTime() {
+  if (simulationOffset !== null) return Date.now() + simulationOffset;
+  return Date.now();
+}
+
+// Synchroniser avec database.js
+db.setTimeOverride(() => getRaceTime());
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -65,12 +76,29 @@ app.post('/api/admin/reset', (req, res) => {
   res.json({ ok: true });
 });
 
+// Lancer simulation (fait croire au serveur qu'il est 8h00 le 1er août)
+app.post('/api/admin/simulation/start', (req, res) => {
+  const raceStartMs = RACE_START.getTime();
+  simulationOffset = raceStartMs - Date.now();
+  db.startNewLoopForAll(getRaceTime());
+  console.log('🎮 Simulation démarrée ! Offset:', Math.round(simulationOffset/3600000), 'heures');
+  res.json({ ok: true, message: 'Simulation démarrée — il est maintenant 8h00 le 1er août !' });
+});
+
+// Arrêter simulation
+app.post('/api/admin/simulation/stop', (req, res) => {
+  simulationOffset = null;
+  db.resetAll();
+  console.log('🛑 Simulation arrêtée.');
+  res.json({ ok: true, message: 'Simulation arrêtée. Données de test effacées.' });
+});
+
 // Infos course en temps réel
 app.get('/api/race-status', (req, res) => {
-  const now = Date.now();
+  const now = getRaceTime();
   const raceStartMs = RACE_START.getTime();
   if (now < raceStartMs) {
-    return res.json({ status: 'before', ms_to_start: raceStartMs - now });
+    return res.json({ status: 'before', ms_to_start: raceStartMs - now, simulation: simulationOffset !== null });
   }
   const elapsed = now - raceStartMs;
   const currentLoop = Math.floor(elapsed / LOOP_DURATION_MS) + 1;
@@ -80,7 +108,8 @@ app.get('/api/race-status', (req, res) => {
     status: 'running',
     current_loop: currentLoop,
     ms_to_next_loop: msToNextLoop,
-    next_loop_start: raceStartMs + currentLoop * LOOP_DURATION_MS
+    next_loop_start: raceStartMs + currentLoop * LOOP_DURATION_MS,
+    simulation: simulationOffset !== null
   });
 });
 
@@ -99,7 +128,7 @@ function startLoopForAllRunners() {
 
 // ---- ÉLIMINATION + DÉMARRAGE À CHAQUE HEURE PILE ----
 function scheduleNextHour() {
-  const now = Date.now();
+  const now = getRaceTime();
   const raceStartMs = RACE_START.getTime();
 
   if (now < raceStartMs) {
@@ -119,7 +148,7 @@ function scheduleNextHour() {
   const msToNextLoop = LOOP_DURATION_MS - msIntoLoop;
 
   setTimeout(() => {
-    const loop = Math.floor((Date.now() - raceStartMs) / LOOP_DURATION_MS) + 1;
+    const loop = Math.floor((getRaceTime() - raceStartMs) / LOOP_DURATION_MS) + 1;
     console.log(`\n💀 Heure ${loop} — Élimination + nouveau départ...`);
     const eliminated = db.eliminateLateRunners();
     console.log(`   ${eliminated} coureur(s) éliminé(s).`);

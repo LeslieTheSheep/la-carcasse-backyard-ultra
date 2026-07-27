@@ -232,6 +232,9 @@ async function updateCountdown() {
 
     } else if (data.status === 'running') {
       // Pendant la course : décompte avant le prochain départ
+      // Badge simulation si actif
+      const simBadge = data.simulation ? '<span style="background:#4c1d95;color:#a78bfa;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;margin-left:8px">🎮 SIMULATION</span>' : '';
+
       const diff = data.ms_to_next_loop;
       const mins = Math.floor(diff / 60000);
       const secs = Math.floor((diff % 60000) / 1000);
@@ -244,7 +247,7 @@ async function updateCountdown() {
         <i class="ti ti-flag-filled countdown-icon" style="font-size:22px;color:${isUrgent?'var(--red)':'var(--green)'}"></i>
         <div style="flex:1">
           <div class="countdown-label" style="color:${isUrgent?'var(--red)':'var(--green)'}">
-            ${isUrgent ? '⚠️ Prochain départ imminent !' : `Boucle ${data.current_loop} en cours`}
+            ${isUrgent ? '⚠️ Prochain départ imminent !' : `Boucle ${data.current_loop} en cours`}${simBadge||''}
           </div>
           <div class="countdown-units">
             <div class="cd-unit">

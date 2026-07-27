@@ -42,6 +42,25 @@
     </div>
   </div>
 
+  <!-- Simulation -->
+  <div class="form-card" style="border-color:#4c1d95;margin-bottom:14px">
+    <h3 style="color:#a78bfa"><i class="ti ti-player-play"></i> Mode simulation</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">
+      Simule le départ de la course maintenant pour tester les scans. 
+      Le serveur se comportera comme si il était <strong>8h00 le 1er août</strong>.
+      Les données de test seront effacées à l'arrêt.
+    </p>
+    <div id="sim-status" style="padding:10px;border-radius:8px;font-size:13px;font-weight:600;text-align:center;margin-bottom:12px;background:#1a1a2e;color:#a78bfa;border:1px solid #4c1d95">
+      ⏸ Simulation inactive
+    </div>
+    <button class="btn mb" style="background:#2e1065;color:#a78bfa;border:1px solid #4c1d95" onclick="startSimulation()" id="btn-sim-start">
+      <i class="ti ti-player-play"></i> Lancer la simulation
+    </button>
+    <button class="btn" style="background:#2d1515;color:#f87171;border:1px solid #7f1d1d;display:none" onclick="stopSimulation()" id="btn-sim-stop">
+      <i class="ti ti-player-stop"></i> Arrêter et effacer les données de test
+    </button>
+  </div>
+
   <!-- Élimination manuelle -->
   <div class="form-card" style="border-color:#7c2d12;margin-bottom:14px">
     <h3 style="color:var(--amber)"><i class="ti ti-skull"></i> Élimination manuelle</h3>
@@ -133,6 +152,30 @@ async function removeRunner(name, btn) {
   const data = await res.json();
   if (data.ok) loadParticipants();
   else { alert('Erreur lors de la suppression.'); btn.disabled = false; }
+}
+
+async function startSimulation() {
+  if (!confirm('Lancer la simulation ? Le serveur simulera 8h00 le 1er août et démarrera les boucles.')) return;
+  const res = await fetch('/api/admin/simulation/start', { method: 'POST' });
+  const data = await res.json();
+  document.getElementById('sim-status').textContent = '▶️ ' + data.message;
+  document.getElementById('sim-status').style.background = '#052e16';
+  document.getElementById('sim-status').style.color = '#22c55e';
+  document.getElementById('sim-status').style.borderColor = '#166534';
+  document.getElementById('btn-sim-start').style.display = 'none';
+  document.getElementById('btn-sim-stop').style.display = 'flex';
+}
+
+async function stopSimulation() {
+  if (!confirm('Arrêter la simulation ? Les données de test seront effacées.')) return;
+  const res = await fetch('/api/admin/simulation/stop', { method: 'POST' });
+  const data = await res.json();
+  document.getElementById('sim-status').textContent = '⏸ Simulation inactive';
+  document.getElementById('sim-status').style.background = '#1a1a2e';
+  document.getElementById('sim-status').style.color = '#a78bfa';
+  document.getElementById('sim-status').style.borderColor = '#4c1d95';
+  document.getElementById('btn-sim-start').style.display = 'flex';
+  document.getElementById('btn-sim-stop').style.display = 'none';
 }
 
 async function eliminateNow() {

@@ -190,6 +190,6 @@ function resetAll() {
   db.exec(`DELETE FROM loops`);
 }
 
-module.exports = { getOrCreateRunner, getAllRunners, getParticipants, updateNickname, updatePhoto, importParticipants, startNewLoopForAll,
+module.exports = { getOrCreateRunner, getAllRunners, getParticipants, updateNickname, updatePhoto, importParticipants, startNewLoopForAll, setTimeOverride, getNow,
   processScan, getLeaderboard, getRunnerLoops, deleteRunner, resetAll, setDNF, cancelDNF,
   eliminateLateRunners, LOOP_KM, HALF_KM };
