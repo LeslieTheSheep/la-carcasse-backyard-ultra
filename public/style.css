@@ -52,14 +52,16 @@ html, body {
   margin: 0 auto;
 }
 
-/* Motif topo en fond */
+/* Fond topo SVG */
 .onboarding-page::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cpath d='M200,50 Q320,100 350,200 Q320,300 200,350 Q80,300 50,200 Q80,100 200,50Z' fill='none' stroke='%23ffffff08' stroke-width='1'/%3E%3Cpath d='M200,80 Q300,120 330,200 Q300,280 200,320 Q100,280 70,200 Q100,120 200,80Z' fill='none' stroke='%23ffffff06' stroke-width='1'/%3E%3Cpath d='M200,110 Q280,140 310,200 Q280,260 200,290 Q120,260 90,200 Q120,140 200,110Z' fill='none' stroke='%23ffffff05' stroke-width='1'/%3E%3Cpath d='M200,140 Q260,160 285,200 Q260,240 200,260 Q140,240 115,200 Q140,160 200,140Z' fill='none' stroke='%23ffffff04' stroke-width='1'/%3E%3C/svg%3E");
-  background-size: 400px 400px;
+  background-image: url('topo.svg');
+  background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.35;
   pointer-events: none;
 }
 
@@ -146,6 +148,23 @@ html, body {
   z-index: 1;
   width: 100%;
   max-width: 320px;
+}
+
+/* Message sans cadre — comme dans la maquette */
+.ob-message-plain {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.7;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  text-align: center;
+  margin-bottom: 48px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 300px;
+  opacity: 0.85;
 }
 
 .ob-buttons {
