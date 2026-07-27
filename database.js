@@ -190,6 +190,11 @@ function resetAll() {
   db.exec(`DELETE FROM loops`);
 }
 
+// Système de simulation — override de l'heure
+let _timeOverride = null;
+function setTimeOverride(fn) { _timeOverride = fn; }
+function getNow() { return _timeOverride ? _timeOverride() : Date.now(); }
+
 module.exports = { getOrCreateRunner, getAllRunners, getParticipants, updateNickname, updatePhoto, importParticipants, startNewLoopForAll, setTimeOverride, getNow,
   processScan, getLeaderboard, getRunnerLoops, deleteRunner, resetAll, setDNF, cancelDNF,
   eliminateLateRunners, LOOP_KM, HALF_KM };
