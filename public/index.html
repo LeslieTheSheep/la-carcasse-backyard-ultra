@@ -8,61 +8,89 @@
   <meta name="apple-mobile-web-app-title" content="La Carcasse">
   <meta name="theme-color" content="#080810">
   <title>La Carcasse — Backyard Ultra</title>
+  <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
-<div id="app">
+
+<!-- ============ ONBOARDING ============ -->
+<div id="onboarding" style="display:none">
+
+  <!-- Splash -->
+  <div id="ob-splash" class="onboarding-page">
+    <div class="splash-logo"><img src="logo.png" alt="La Carcasse"></div>
+    <div class="splash-title">LA CARCASSE</div>
+    <div class="splash-sub">Backyard Ultra — 6km Loop</div>
+    <button class="splash-btn" onclick="goToModeSelect()">
+      COMMENCER <span class="splash-btn-arrow">→</span>
+    </button>
+  </div>
+
+  <!-- Choix de mode -->
+  <div id="ob-mode" class="onboarding-page" style="display:none">
+    <div class="ob-title">IMPORTANT</div>
+    <div class="ob-message">
+      Pour assurer le bon fonctionnement de l'application, merci de garder cet onglet ouvert dans votre navigateur.
+    </div>
+    <div class="ob-buttons">
+      <button class="ob-btn ob-btn-runner" onclick="selectMode('runner')">
+        <i class="ti ti-run"></i> SÉLECTIONNER COUREUR
+      </button>
+      <button class="ob-btn ob-btn-spectator" onclick="selectMode('spectator')">
+        <i class="ti ti-eye"></i> MODE SPECTATEUR
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ APP PRINCIPALE ============ -->
+<div id="app" style="display:none">
 
   <!-- HEADER -->
   <header class="app-header">
     <div class="header-logo"><img src="logo.png" alt="La Carcasse"></div>
     <div class="header-text">
-      <h1>La Carcasse</h1>
-      <div class="sub">Backyard Ultra · 6 km loop</div>
+      <h1>LA CARCASSE</h1>
+      <div class="sub">Backyard Ultra · 6km Loop</div>
     </div>
-    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+    <div class="live-badge"><div class="live-dot"></div>Live</div>
   </header>
 
-  <!-- COMPTE A REBOURS -->
+  <!-- COMPTE À REBOURS -->
   <div class="countdown-bar" id="countdown-bar">
-    <i class="ti ti-clock-countdown countdown-icon" style="font-size:22px"></i>
-    <div style="flex:1">
-      <div class="countdown-label">Départ dans</div>
-      <div class="countdown-units">
-        <div class="cd-unit"><div class="cd-val" id="cd-days">--</div><div class="cd-lbl">jours</div></div>
-        <div class="cd-sep">:</div>
-        <div class="cd-unit"><div class="cd-val" id="cd-hours">--</div><div class="cd-lbl">heures</div></div>
-        <div class="cd-sep">:</div>
-        <div class="cd-unit"><div class="cd-val" id="cd-mins">--</div><div class="cd-lbl">min</div></div>
-        <div class="cd-sep">:</div>
-        <div class="cd-unit"><div class="cd-val" id="cd-secs">--</div><div class="cd-lbl">sec</div></div>
-      </div>
+    <div class="countdown-label" id="countdown-label">Départ dans</div>
+    <div class="countdown-units" id="countdown-units">
+      <div class="cd-unit"><div class="cd-val" id="cd-days">--</div><div class="cd-lbl">Jours</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-unit"><div class="cd-val" id="cd-hours">--</div><div class="cd-lbl">Heures</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-unit"><div class="cd-val" id="cd-mins">--</div><div class="cd-lbl">Mins</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-unit"><div class="cd-val" id="cd-secs">--</div><div class="cd-lbl">Secs</div></div>
     </div>
   </div>
 
-  <!-- CONTENU ONGLETS -->
+  <!-- CONTENU -->
   <div class="tab-content">
 
     <!-- COUREURS -->
     <div class="tab-panel active" id="panel-coureurs">
       <div class="section-label">Coureurs en course</div>
-      <div id="coureurs-list"></div>
+      <div id="coureurs-list"><div class="empty-state"><i class="ti ti-run"></i><p>Aucun coureur inscrit.</p></div></div>
       <div id="dnf-section" style="display:none">
-        <div class="section-label" style="margin-top:20px;color:#7f1d1d;display:flex;align-items:center;gap:6px">
-          <i class="ti ti-flag-off"></i> Abandons (DNF)
-        </div>
+        <div class="section-label" style="color:#7f1d1d;margin-top:16px">Abandons (DNF)</div>
         <div id="dnf-list"></div>
       </div>
     </div>
 
     <!-- CLASSEMENT -->
     <div class="tab-panel" id="panel-classement">
+      <div id="podium-wrap" class="podium-wrap"></div>
       <div class="section-label">Classement général</div>
       <div id="classement-list"></div>
     </div>
@@ -73,121 +101,103 @@
       <div id="map"></div>
       <div class="map-legend">
         <h3>Légende</h3>
-        <div class="legend-item"><div class="legend-dot" style="background:#e8392a"></div> START / Arrivée</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div> Checkpoint</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#f97316;border-radius:2px;height:4px;width:20px"></div> Tracé boucle 6 km</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e8392a"></div>Start / Arrivée</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Checkpoint</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f97316;border-radius:2px;height:4px;width:20px"></div>Tracé boucle 6km</div>
       </div>
-      <a href="/trace.gpx" download="La_Carcasse_Backyard_Ultra.gpx" class="btn btn-ghost" style="margin-top:10px;text-decoration:none">
+      <a href="/trace.gpx" download="La_Carcasse_Backyard_Ultra.gpx" class="gpx-btn">
         <i class="ti ti-download"></i> Télécharger le tracé GPX
       </a>
-      <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.5">
-        Compatible Garmin, COROS, Suunto, Polar, Wahoo et toutes les montres GPS
-      </div>
+      <div class="gpx-compat">Compatible Garmin, Coros, Suunto, Polar, Wahoo et toutes les montres GPS</div>
     </div>
 
     <!-- PROFIL -->
     <div class="tab-panel" id="panel-profil">
+
+      <!-- Identification -->
       <div id="profil-identify" style="display:none">
         <div class="identify-wrap">
-          <div class="identify-logo"><img src="logo.png" alt="La Carcasse"></div>
-          <h2>Qui es-tu ?</h2>
-          <p>Sélectionne ton nom dans la liste des participants.</p>
-          <div class="search-wrap">
-            <div class="search-box">
-              <i class="ti ti-search"></i>
-              <input type="text" id="search-input" placeholder="Recherche ton nom..." oninput="filterParticipants(this.value)">
-            </div>
-            <div class="participant-list" id="participant-list"></div>
-            <div class="manual-link" onclick="showManual()">Mon nom n'est pas dans la liste</div>
+          <div class="identify-title">QUI EST TU ?</div>
+          <div class="identify-sub">Sélectionne ton nom dans la liste des participants</div>
+          <div class="search-box">
+            <i class="ti ti-search"></i>
+            <input type="text" id="search-input" placeholder="Recherche ton nom..." oninput="filterParticipants(this.value)">
           </div>
-          <div id="manual-form" style="display:none;width:100%;max-width:360px;margin-top:14px">
-            <input type="text" id="manual-input" placeholder="Entre ton prénom et nom..." style="margin-bottom:10px">
-            <button class="btn btn-accent" onclick="doManualIdentify()">
-              <i class="ti ti-check"></i> Confirmer
-            </button>
+          <div class="participant-list" id="participant-list"></div>
+          <div class="manual-link" onclick="showManual()">Mon nom n'est pas dans la liste</div>
+          <div id="manual-form" style="display:none;margin-top:14px">
+            <input type="text" id="manual-input" placeholder="Entre ton prénom et nom..." style="margin-bottom:10px;padding-left:14px">
+            <button class="btn btn-accent" onclick="doManualIdentify()"><i class="ti ti-check"></i> Confirmer</button>
           </div>
         </div>
       </div>
 
-      <div id="profil-main" style="display:none">
-        <div class="profile-hero">
-          <div class="profile-photo-wrap">
-            <div class="profile-photo" id="profile-photo-el" onclick="document.getElementById('photo-input').click()">
-              <i class="ti ti-user"></i>
-            </div>
-            <div class="photo-edit" onclick="document.getElementById('photo-input').click()">
-              <i class="ti ti-camera"></i>
-            </div>
-            <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(this)">
+      <!-- Profil connecté -->
+      <div id="profil-main" style="display:none;padding-top:8px">
+        <div class="profile-photo-wrap">
+          <div class="profile-photo" id="profile-photo-el" onclick="document.getElementById('photo-input').click()">
+            <i class="ti ti-photo"></i>
           </div>
-          <div id="profile-bib-badge" class="profile-bib" style="display:none"></div>
-          <div class="profile-name" id="profile-display-name">—</div>
-          <div class="profile-realname" id="profile-real-name"></div>
-          <div id="profile-state-el" style="margin-top:8px"></div>
-        </div>
-
-        <div class="stats-row">
-          <div class="stat-box stat-loops"><div class="val" id="pstat-loops">0</div><div class="lbl">Boucles</div></div>
-          <div class="stat-box stat-km"><div class="val" id="pstat-km">0</div><div class="lbl">km total</div></div>
-          <div class="stat-box stat-time"><div class="val" id="pstat-best">--</div><div class="lbl">Meilleure</div></div>
-        </div>
-
-        <div class="form-card">
-          <h3>Mon surnom</h3>
-          <input type="text" id="nickname-input" placeholder="Ex : Flash, Turbo, Le Boiteux..." style="margin-bottom:10px" maxlength="20">
-          <button class="btn btn-accent mb" onclick="saveNickname()">
-            <i class="ti ti-device-floppy"></i> Enregistrer
-          </button>
-        </div>
-
-        <div class="form-card" id="history-card" style="display:none">
-          <h3>Mes boucles &amp; allures</h3>
-          <div id="history-list"></div>
-          <div id="avg-pace-box" style="margin-top:14px;padding:12px;background:var(--card2);border-radius:10px;text-align:center;display:none">
-            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Allure moyenne</div>
-            <div id="avg-pace-val" style="font-size:22px;font-weight:800;color:var(--blue)"></div>
-            <div style="font-size:11px;color:var(--muted)">min/km</div>
+          <div class="photo-edit" onclick="document.getElementById('photo-input').click()">
+            <i class="ti ti-camera"></i> PHOTO
           </div>
+          <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(this)">
         </div>
 
-        <!-- DNF -->
-        <div id="dnf-btn-section">
-          <button class="btn btn-danger mb" onclick="confirmDNF()" id="dnf-btn">
-            <i class="ti ti-flag-off"></i> Abandonner la course (DNF)
-          </button>
+        <div class="profile-bib-name" id="profile-bib-name">—</div>
+        <div class="profile-state-wrap" id="profile-state-el"></div>
+
+        <div class="stats-row" style="margin-top:14px">
+          <div class="stat-box"><div class="val" id="pstat-loops">0</div><div class="lbl">Boucles</div></div>
+          <div class="stat-box"><div class="val" id="pstat-km">0.0</div><div class="lbl">Km Total</div></div>
+          <div class="stat-box"><div class="val" id="pstat-best">--</div><div class="lbl">Meilleure Allure</div></div>
         </div>
 
-        <button class="btn btn-ghost" onclick="logout()" style="margin-top:4px">
-          <i class="ti ti-logout"></i> Changer de coureur
+        <div class="avg-time-box" id="avg-time-box" style="display:none">
+          <div class="avg-time-label">Temps moyen</div>
+          <div class="avg-time-val" id="avg-time-val">--</div>
+          <div class="avg-time-sub">par boucle</div>
+        </div>
+
+        <button class="btn btn-danger mb" onclick="confirmDNF()" id="dnf-btn" style="margin-top:4px">
+          <i class="ti ti-flag-off"></i> ABANDONNER LA COURSE
         </button>
-      </div>
-    </div>
 
+        <div class="change-runner" onclick="logout()">C'est pas toi ?</div>
+
+        <div id="history-section" class="history-section" style="display:none">
+          <div class="history-title">Détail des boucles</div>
+          <div id="history-list"></div>
+        </div>
+      </div>
+
+    </div>
   </div>
 
-  <!-- NAVIGATION BAS -->
-  <nav class="bottom-nav">
+  <!-- NAVIGATION -->
+  <nav class="bottom-nav" id="bottom-nav">
     <button class="nav-btn active" onclick="switchTab('coureurs',this)">
-      <i class="ti ti-run"></i>COUREURS
+      <i class="ti ti-run"></i>Coureurs
     </button>
     <button class="nav-btn" onclick="switchTab('classement',this)">
-      <i class="ti ti-trophy"></i>CLASSEMENT
+      <i class="ti ti-trophy"></i>Classement
     </button>
     <button class="nav-btn" onclick="switchTab('carte',this)">
-      <i class="ti ti-map-2"></i>CARTE
+      <i class="ti ti-map-pin"></i>Carte
     </button>
-    <button class="nav-btn" onclick="switchTab('profil',this)">
-      <i class="ti ti-user"></i>PROFIL
+    <button class="nav-btn" id="nav-profil-btn" onclick="switchTab('profil',this)">
+      <i class="ti ti-user"></i>Profil
     </button>
   </nav>
+
 </div>
 
 <!-- MODAL DÉTAIL COUREUR -->
-<div id="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;overflow-y:auto;padding:20px" onclick="closeModal(event)">
-  <div id="modal-box" style="background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:440px;margin:0 auto;padding:20px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div style="font-size:18px;font-weight:800" id="modal-title">Détail coureur</div>
-      <button onclick="document.getElementById('modal-overlay').style.display='none'" style="background:var(--card2);border:none;color:var(--muted);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:18px">✕</button>
+<div id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div style="font-family:var(--font-title);font-size:20px;letter-spacing:1px">DÉTAIL</div>
+      <button class="modal-close" onclick="document.getElementById('modal-overlay').style.display='none'">✕</button>
     </div>
     <div id="modal-content"></div>
   </div>
@@ -196,114 +206,153 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const LOOP_KM = 6.00;
-const RACE_START = new Date('2026-08-01T08:00:00');
+const RACE_START = new Date('2026-08-01T08:00:00+02:00');
 let myName = localStorage.getItem('backyard_runner') || null;
+let myMode = localStorage.getItem('backyard_mode') || null; // 'runner' | 'spectator'
 let allParticipants = [];
 let mapInit = false;
+let chronoRunners = [];
 
-// ---- COMPTE A REBOURS ----
+// ============ ONBOARDING ============
+function initApp() {
+  const onboarded = localStorage.getItem('backyard_onboarded');
+  if (!onboarded) {
+    document.getElementById('onboarding').style.display = 'block';
+    document.getElementById('app').style.display = 'none';
+  } else {
+    startApp();
+  }
+}
+
+function goToModeSelect() {
+  document.getElementById('ob-splash').style.display = 'none';
+  document.getElementById('ob-mode').style.display = 'flex';
+}
+
+function selectMode(mode) {
+  myMode = mode;
+  localStorage.setItem('backyard_mode', mode);
+  localStorage.setItem('backyard_onboarded', '1');
+  document.getElementById('onboarding').style.display = 'none';
+  startApp();
+}
+
+function startApp() {
+  document.getElementById('app').style.display = 'flex';
+  // Cacher onglet profil si spectateur
+  if (myMode === 'spectator') {
+    document.getElementById('nav-profil-btn').style.display = 'none';
+  }
+  loadData();
+  renderProfil();
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+  setInterval(loadData, 5000);
+  setInterval(() => {
+    chronoRunners.forEach(r => {
+      if (!r.loop_start_time || r.state === 'waiting_start' || r.dnf) return;
+      const elapsed = Math.floor((Date.now() - r.loop_start_time) / 1000);
+      const el = document.getElementById('ch_' + r.name.replace(/[^a-z0-9]/gi,'_'));
+      if (el) el.textContent = fmtTime(elapsed);
+    });
+  }, 1000);
+}
+
+// ============ SWITCH MODE ============
+function switchMode() {
+  if (confirm('Changer de mode ? Tu resteras connecté si tu es un coureur.')) {
+    const newMode = myMode === 'runner' ? 'spectator' : 'runner';
+    myMode = newMode;
+    localStorage.setItem('backyard_mode', newMode);
+    if (newMode === 'spectator') {
+      document.getElementById('nav-profil-btn').style.display = 'none';
+    } else {
+      document.getElementById('nav-profil-btn').style.display = '';
+    }
+  }
+}
+
+// ============ COUNTDOWN ============
 async function updateCountdown() {
-  const bar = document.getElementById('countdown-bar');
   try {
     const res = await fetch('/api/race-status');
     const data = await res.json();
+    const bar = document.getElementById('countdown-bar');
+    const label = document.getElementById('countdown-label');
+    const units = document.getElementById('countdown-units');
 
     if (data.status === 'before') {
-      // Avant la course : décompte jusqu'au départ
       const diff = data.ms_to_start;
       const days  = Math.floor(diff/86400000);
       const hours = Math.floor((diff%86400000)/3600000);
       const mins  = Math.floor((diff%3600000)/60000);
       const secs  = Math.floor((diff%60000)/1000);
-      bar.innerHTML = `
-        <i class="ti ti-clock-countdown countdown-icon" style="font-size:22px"></i>
-        <div style="flex:1">
-          <div class="countdown-label">Départ dans</div>
-          <div class="countdown-units">
-            <div class="cd-unit"><div class="cd-val">${String(days).padStart(2,'0')}</div><div class="cd-lbl">jours</div></div>
-            <div class="cd-sep">:</div>
-            <div class="cd-unit"><div class="cd-val">${String(hours).padStart(2,'0')}</div><div class="cd-lbl">heures</div></div>
-            <div class="cd-sep">:</div>
-            <div class="cd-unit"><div class="cd-val">${String(mins).padStart(2,'0')}</div><div class="cd-lbl">min</div></div>
-            <div class="cd-sep">:</div>
-            <div class="cd-unit"><div class="cd-val">${String(secs).padStart(2,'0')}</div><div class="cd-lbl">sec</div></div>
-          </div>
-        </div>`;
-
-    } else if (data.status === 'running') {
-      // Pendant la course : décompte avant le prochain départ
-      // Badge simulation si actif
-      const simBadge = data.simulation ? '<span style="background:#4c1d95;color:#a78bfa;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;margin-left:8px">🎮 SIMULATION</span>' : '';
-
+      label.textContent = 'Départ dans';
+      document.getElementById('cd-days').textContent  = String(days).padStart(2,'0');
+      document.getElementById('cd-hours').textContent = String(hours).padStart(2,'0');
+      document.getElementById('cd-mins').textContent  = String(mins).padStart(2,'0');
+      document.getElementById('cd-secs').textContent  = String(secs).padStart(2,'0');
+    } else {
       const diff = data.ms_to_next_loop;
-      const mins = Math.floor(diff / 60000);
-      const secs = Math.floor((diff % 60000) / 1000);
-      const isUrgent = diff < 5 * 60 * 1000; // moins de 5 min = alerte rouge
-      bar.style.background = isUrgent
-        ? 'linear-gradient(135deg, #2d0a0a 0%, #1a0a0a 100%)'
-        : 'linear-gradient(135deg, #0a1a0a 0%, #0a120a 100%)';
-      bar.style.borderBottomColor = isUrgent ? '#7f1d1d' : '#166534';
-      bar.innerHTML = `
-        <i class="ti ti-flag-filled countdown-icon" style="font-size:22px;color:${isUrgent?'var(--red)':'var(--green)'}"></i>
-        <div style="flex:1">
-          <div class="countdown-label" style="color:${isUrgent?'var(--red)':'var(--green)'}">
-            ${isUrgent ? '⚠️ Prochain départ imminent !' : `Boucle ${data.current_loop} en cours`}${simBadge||''}
-          </div>
-          <div class="countdown-units">
-            <div class="cd-unit">
-              <div class="cd-val" style="color:${isUrgent?'var(--red)':'#fff'}">${String(mins).padStart(2,'0')}</div>
-              <div class="cd-lbl">min</div>
-            </div>
-            <div class="cd-sep" style="color:${isUrgent?'var(--red)':'var(--green)'}">:</div>
-            <div class="cd-unit">
-              <div class="cd-val" style="color:${isUrgent?'var(--red)':'#fff'}">${String(secs).padStart(2,'0')}</div>
-              <div class="cd-lbl">sec</div>
-            </div>
-            <div style="margin-left:12px;font-size:12px;color:var(--muted);align-self:center">avant le prochain départ</div>
-          </div>
-        </div>`;
+      const mins = Math.floor(diff/60000);
+      const secs = Math.floor((diff%60000)/1000);
+      const isUrgent = diff < 5*60*1000;
+      bar.style.borderColor = isUrgent ? '#7f1d1d' : 'var(--border)';
+      const simBadge = data.simulation ? ' 🎮' : '';
+      label.textContent = isUrgent ? '⚠️ Prochain départ imminent !' : `Boucle ${data.current_loop} en cours${simBadge}`;
+      label.style.color = isUrgent ? '#f87171' : 'var(--muted)';
+      units.innerHTML = `
+        <div class="cd-unit"><div class="cd-val" style="color:${isUrgent?'#f87171':'#fff'}">${String(mins).padStart(2,'0')}</div><div class="cd-lbl">Mins</div></div>
+        <div class="cd-sep" style="color:${isUrgent?'#f87171':'var(--accent)'}">:</div>
+        <div class="cd-unit"><div class="cd-val" style="color:${isUrgent?'#f87171':'#fff'}">${String(secs).padStart(2,'0')}</div><div class="cd-lbl">Secs</div></div>
+        <div style="margin-left:10px;font-size:11px;color:var(--muted);align-self:center;font-weight:600">avant le prochain départ</div>`;
     }
   } catch(e) {}
 }
-updateCountdown(); setInterval(updateCountdown, 1000);
 
-// ---- NAVIGATION ----
+// ============ NAVIGATION ============
 function switchTab(tab, btn) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-'+tab).classList.add('active');
   btn.classList.add('active');
-  if (tab==='profil') renderProfil();
-  if (tab==='carte' && !mapInit) initMap();
+  if (tab === 'profil') renderProfil();
+  if (tab === 'carte' && !mapInit) initMap();
 }
 
-// ---- HELPERS ----
+// ============ HELPERS ============
 function fmtTime(s) {
-  if (!s && s!==0) return '--';
-  const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
-  if (h>0) return `${h}h ${m}m ${sec}s`;
-  if (m>0) return `${m}m ${sec}s`;
+  if (!s && s !== 0) return '--';
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  if (h > 0) return `${h}H ${m}M ${sec}S`;
+  if (m > 0) return `${m}M ${sec}S`;
+  return `${sec}S`;
+}
+
+function fmtTimeSmall(s) {
+  if (!s && s !== 0) return '--';
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  if (h > 0) return `${h}h${m}m${sec}s`;
+  if (m > 0) return `${m}m ${sec}s`;
   return `${sec}s`;
 }
 
 function pace(seconds) {
-  // min/km
+  if (!seconds || seconds <= 0) return '--';
   const totalMin = seconds / 60 / LOOP_KM;
-  const m = Math.floor(totalMin);
-  const s = Math.round((totalMin - m) * 60);
+  const m = Math.floor(totalMin), s = Math.round((totalMin - m) * 60);
   return `${m}'${String(s).padStart(2,'0')}"`;
 }
 
 function stateInfo(state) {
   return {
-    waiting_start:      { label:'En attente du départ', cls:'pill-go',    icon:'ti-clock' },
-    waiting_checkpoint: { label:'En route → CHECKPOINT', cls:'pill-check', icon:'ti-route' },
-    waiting_end_start:  { label:'Retour → ARRIVÉE',      cls:'pill-back',  icon:'ti-flag-filled' },
-  }[state] || { label:state, cls:'pill-go', icon:'ti-help' };
+    waiting_start:      { label:'En attente',         cls:'pill-go',    icon:'ti-clock' },
+    waiting_checkpoint: { label:'En route → CHECK',   cls:'pill-check', icon:'ti-route' },
+    waiting_end_start:  { label:'Retour → ARRIVÉE',   cls:'pill-back',  icon:'ti-flag-filled' },
+  }[state] || { label: state, cls:'pill-go', icon:'ti-help' };
 }
 
 function getPhoto(name, serverPhoto) {
-  // Priorité : photo du serveur, puis localStorage
   return serverPhoto || localStorage.getItem('photo_'+name) || null;
 }
 
@@ -312,414 +361,137 @@ function avatarEl(name, serverPhoto) {
   return p ? `<img src="${p}">` : `<i class="ti ti-user"></i>`;
 }
 
-// ---- MODAL DETAIL ----
-async function openRunnerDetail(name) {
-  document.getElementById('modal-overlay').style.display = 'block';
-  document.getElementById('modal-title').textContent = name;
-  document.getElementById('modal-content').innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted)"><i class="ti ti-loader-2" style="font-size:32px"></i></div>';
-
-  try {
-    const [lbRes, loopRes] = await Promise.all([
-      fetch('/api/leaderboard'),
-      fetch('/api/runner/'+encodeURIComponent(name)+'/loops')
-    ]);
-    const runners = await lbRes.json();
-    const loops = await loopRes.json();
-    const runner = runners.find(r => r.name === name);
-    if (!runner) { document.getElementById('modal-content').innerHTML = '<p style="color:var(--muted)">Données introuvables.</p>'; return; }
-
-    const photo = getPhoto(name, runner?.photo);
-    const displayName = runner.nickname || runner.name;
-    const avgPaceSec = loops.length ? loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length : null;
-
-    let html = `
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
-        <div style="width:56px;height:56px;border-radius:14px;background:var(--card2);border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          ${photo?`<img src="${photo}" style="width:100%;height:100%;object-fit:cover">`:'<i class="ti ti-user" style="font-size:28px;color:var(--muted)"></i>'}
-        </div>
-        <div>
-          <div style="font-size:18px;font-weight:800">${displayName}</div>
-          ${runner.nickname?`<div style="font-size:12px;color:var(--muted)">${runner.name}</div>`:''}
-          ${runner.bib_number?`<div style="display:inline-block;background:var(--accent);color:#fff;border-radius:6px;padding:1px 10px;font-size:12px;font-weight:700;margin-top:3px">Dossard #${runner.bib_number}</div>`:''}
-          ${runner.dnf?`<div style="display:inline-block;background:#2d1515;color:#f87171;border:1px solid #7f1d1d;border-radius:6px;padding:1px 10px;font-size:12px;font-weight:700;margin-left:4px">DNF</div>`:''}
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px">
-        <div style="background:var(--card2);border-radius:11px;padding:12px 8px;text-align:center">
-          <div style="font-size:24px;font-weight:800;color:var(--green)">${runner.loops}</div>
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase">Boucles</div>
-        </div>
-        <div style="background:var(--card2);border-radius:11px;padding:12px 8px;text-align:center">
-          <div style="font-size:18px;font-weight:800;color:var(--accent)">${(runner.loops*LOOP_KM).toFixed(1)}</div>
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase">km total</div>
-        </div>
-        <div style="background:var(--card2);border-radius:11px;padding:12px 8px;text-align:center">
-          <div style="font-size:16px;font-weight:800;color:var(--blue)">${runner.best_time?pace(runner.best_time):'--'}</div>
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase">Meill. allure</div>
-        </div>
-      </div>`;
-
-    if (avgPaceSec) {
-      html += `
-      <div style="background:linear-gradient(135deg,#1a0a20,#0a1a20);border:1px solid var(--border);border-radius:11px;padding:14px;text-align:center;margin-bottom:18px;display:flex;justify-content:space-around">
-        <div>
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:3px">Allure moyenne</div>
-          <div style="font-size:22px;font-weight:800;color:var(--blue)">${pace(avgPaceSec)}</div>
-          <div style="font-size:10px;color:var(--muted)">min/km</div>
-        </div>
-        <div>
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:3px">Temps moyen</div>
-          <div style="font-size:22px;font-weight:800;color:var(--amber)">${fmtTime(Math.round(avgPaceSec))}</div>
-          <div style="font-size:10px;color:var(--muted)">par boucle</div>
-        </div>
-      </div>`;
-    }
-
-    if (loops.length > 0) {
-      html += `<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Détail des boucles</div>`;
-      html += loops.map((l, i) => {
-        const isBest = l.duration_seconds === runner.best_time;
-        return `
-        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div style="width:28px;height:28px;background:${isBest?'var(--amber)':'var(--card2)'};border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${isBest?'#000':'var(--muted)'};flex-shrink:0">${i+1}</div>
-          <div style="flex:1">
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:16px;font-weight:700;color:var(--green)">${fmtTime(l.duration_seconds)}</span>
-              ${isBest?'<span style="font-size:10px;background:#3a2a00;color:var(--amber);border-radius:4px;padding:1px 6px;font-weight:700">⚡ BEST</span>':''}
-            </div>
-            <div style="font-size:11px;color:var(--muted);margin-top:1px">${new Date(l.end_time).toLocaleString('fr-FR')}</div>
-          </div>
-          <div style="text-align:right;flex-shrink:0">
-            <div style="font-size:14px;font-weight:700;color:var(--blue)">${pace(l.duration_seconds)}</div>
-            <div style="font-size:10px;color:var(--muted)">min/km</div>
-          </div>
-        </div>`;
-      }).join('');
-    } else {
-      html += `<div style="text-align:center;color:var(--muted);padding:20px;font-size:14px">Aucune boucle complétée.</div>`;
-    }
-
-    document.getElementById('modal-content').innerHTML = html;
-  } catch(e) { console.error(e); }
+function partialKm(r) {
+  const base = r.loops * LOOP_KM;
+  if (r.state === 'waiting_end_start') return base + 3.0;
+  return base;
 }
 
-function closeModal(e) {
-  if (e.target === document.getElementById('modal-overlay'))
-    document.getElementById('modal-overlay').style.display = 'none';
-}
+function chronoId(name) { return 'ch_' + name.replace(/[^a-z0-9]/gi,'_'); }
 
-// ---- CARTE ----
-function initMap() {
-  mapInit = true;
-
-  const GPX_TRACK = [
-  [47.339949,4.962243],
-  [47.339988,4.962754],
-  [47.340103,4.963822],
-  [47.340107,4.964028],
-  [47.340063,4.964249],
-  [47.339972,4.964447],
-  [47.339572,4.965413],
-  [47.33947,4.966303],
-  [47.339645,4.966612],
-  [47.33977,4.966757],
-  [47.33987,4.966893],
-  [47.339941,4.967387],
-  [47.339742,4.968604],
-  [47.339708,4.968768],
-  [47.339731,4.968776],
-  [47.339879,4.968815],
-  [47.339995,4.968869],
-  [47.340294,4.969064],
-  [47.340452,4.969103],
-  [47.340721,4.96918],
-  [47.340908,4.96933],
-  [47.340909,4.969327],
-  [47.340763,4.969958],
-  [47.340623,4.970796],
-  [47.340507,4.971323],
-  [47.340442,4.971526],
-  [47.340308,4.971448],
-  [47.340244,4.971422],
-  [47.340194,4.971436],
-  [47.340106,4.971619],
-  [47.340097,4.971637],
-  [47.339526,4.971094],
-  [47.339391,4.971841],
-  [47.339343,4.972291],
-  [47.339264,4.972546],
-  [47.33902,4.973034],
-  [47.338765,4.973426],
-  [47.338711,4.973489],
-  [47.338425,4.97357],
-  [47.338314,4.973577],
-  [47.338201,4.97356],
-  [47.337935,4.973497],
-  [47.33784,4.973511],
-  [47.337461,4.973687],
-  [47.33742,4.973717],
-  [47.337329,4.973964],
-  [47.337224,4.974314],
-  [47.337158,4.974488],
-  [47.337005,4.97481],
-  [47.336721,4.975302],
-  [47.336511,4.97573],
-  [47.336425,4.975906],
-  [47.33624,4.97633],
-  [47.336082,4.97673],
-  [47.335969,4.976962],
-  [47.335816,4.977397],
-  [47.335579,4.9783],
-  [47.335293,4.979127],
-  [47.335006,4.979814],
-  [47.33491,4.980022],
-  [47.334851,4.980236],
-  [47.334725,4.980879],
-  [47.334696,4.981061],
-  [47.334489,4.981285],
-  [47.334255,4.981594],
-  [47.334115,4.981719],
-  [47.333926,4.981902],
-  [47.333801,4.982036],
-  [47.333563,4.982214],
-  [47.333463,4.982355],
-  [47.333336,4.982602],
-  [47.333286,4.982716],
-  [47.333263,4.98283],
-  [47.333216,4.982989],
-  [47.333141,4.983341],
-  [47.333086,4.983868],
-  [47.333065,4.98417],
-  [47.333045,4.984344],
-  [47.333008,4.984492],
-  [47.332935,4.984675],
-  [47.332885,4.984774],
-  [47.331982,4.986302],
-  [47.331868,4.98656],
-  [47.331792,4.986802],
-  [47.331679,4.987237],
-  [47.331496,4.988059],
-  [47.331438,4.988293],
-  [47.331373,4.988512],
-  [47.331263,4.988825],
-  [47.331202,4.989021],
-  [47.331167,4.989161],
-  [47.331152,4.989235],
-  [47.331029,4.99015],
-  [47.330973,4.990233],
-  [47.330976,4.990229],
-  [47.330854,4.989755],
-  [47.330672,4.989403],
-  [47.330616,4.989224],
-  [47.330592,4.98904],
-  [47.330574,4.98872],
-  [47.330575,4.988394],
-  [47.330533,4.988251],
-  [47.330475,4.988143],
-  [47.33031,4.987968],
-  [47.32999,4.987714],
-  [47.329711,4.987525],
-  [47.329651,4.987511],
-  [47.329523,4.98748],
-  [47.329454,4.98748],
-  [47.329373,4.987497],
-  [47.329262,4.987556],
-  [47.32917,4.987645],
-  [47.32886,4.988012],
-  [47.328556,4.98834],
-  [47.328435,4.98843],
-  [47.328205,4.988536],
-  [47.328104,4.988661],
-  [47.327823,4.989014],
-  [47.327779,4.989073],
-  [47.327778,4.989075],
-  [47.327722,4.98907],
-  [47.327679,4.989042],
-  [47.327631,4.988988],
-  [47.327554,4.988826],
-  [47.327494,4.988673],
-  [47.327472,4.988559],
-  [47.327614,4.987619],
-  [47.327681,4.987101],
-  [47.327787,4.986638],
-  [47.327903,4.986197],
-  [47.328128,4.985394],
-  [47.32825,4.985025],
-  [47.328405,4.984662],
-  [47.32859,4.984333],
-  [47.328786,4.98402],
-  [47.329149,4.983803],
-  [47.329219,4.983761],
-  [47.330082,4.983073],
-  [47.330202,4.982929],
-  [47.330317,4.982659],
-  [47.330558,4.982391],
-  [47.330595,4.982349],
-  [47.330865,4.981859],
-  [47.33101,4.981507],
-  [47.331145,4.981264],
-  [47.331395,4.980893],
-  [47.331897,4.980447],
-  [47.332439,4.980105],
-  [47.332574,4.979998],
-  [47.332724,4.979809],
-  [47.332874,4.979535],
-  [47.333942,4.977158],
-  [47.334848,4.975207],
-  [47.3371,4.970211],
-  [47.337316,4.969699],
-  [47.33734,4.969668],
-  [47.337411,4.969782],
-  [47.337632,4.969542],
-  [47.337854,4.969223],
-  [47.337991,4.968956],
-  [47.338098,4.968711],
-  [47.338196,4.968763],
-  [47.338249,4.968855],
-  [47.338372,4.969007],
-  [47.338505,4.969164],
-  [47.338566,4.969262],
-  [47.338573,4.969253],
-  [47.338637,4.969168],
-  [47.339411,4.969622],
-  [47.339656,4.968738],
-  [47.339708,4.968768],
-  [47.339742,4.968604],
-  [47.339941,4.967387],
-  [47.33987,4.966893],
-  [47.33977,4.966757],
-  [47.339645,4.966612],
-  [47.33947,4.966303],
-  [47.339572,4.965413],
-  [47.339972,4.964447],
-  [47.340063,4.964249],
-  [47.340107,4.964028],
-  [47.340103,4.963822],
-  [47.339988,4.962754],
-  [47.339949,4.962243],
-];
-
-  const map = L.map('map', { zoomControl: true }).setView([47.334786, 4.977858], 14);
-
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles © Esri'
-  }).addTo(map);
-
-  // Tracé GPX orange
-  const poly = L.polyline(GPX_TRACK, {
-    color: '#f97316', weight: 5, opacity: 0.95, lineJoin: 'round'
-  }).addTo(map);
-  map.fitBounds(poly.getBounds(), { padding: [24, 24] });
-
-  // Marqueur START (rouge)
-  const startIcon = L.divIcon({ className:'',
-    html:'<div style="background:#e8392a;width:22px;height:22px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(232,57,42,.9);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff">S</div>',
-    iconSize:[22,22], iconAnchor:[11,11] });
-  L.marker([47.339949, 4.962243], { icon: startIcon }).addTo(map).bindPopup('<b>💀 START / Arrivée</b><br>La Carcasse Backyard Ultra');
-
-  // Marqueur CHECKPOINT (bleu)
-  const checkIcon = L.divIcon({ className:'',
-    html:'<div style="background:#60a5fa;width:20px;height:20px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(96,165,250,.9);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff">C</div>',
-    iconSize:[20,20], iconAnchor:[10,10] });
-  L.marker([47.330372, 4.988205], { icon: checkIcon }).addTo(map).bindPopup('<b>🏁 Checkpoint</b><br>Mi-parcours — 3 km');
-}
-
-// ---- COUREURS ----
+// ============ COUREURS ============
 function renderCoureurs(runners) {
   const active = runners.filter(r => !r.dnf);
   const dnf    = runners.filter(r => r.dnf);
 
   const el = document.getElementById('coureurs-list');
   if (!active.length) {
-    el.innerHTML = '<div class="empty-state"><i class="ti ti-run"></i><p>Aucun coureur inscrit.<br>Identifie-toi dans l\'onglet Profil.</p></div>';
+    el.innerHTML = '<div class="empty-state"><i class="ti ti-run"></i><p>Aucun coureur inscrit.</p></div>';
   } else {
     el.innerHTML = active.map(r => runnerCardHtml(r, false)).join('');
   }
 
-  const dnfSection = document.getElementById('dnf-section');
+  const dnfSec = document.getElementById('dnf-section');
   if (dnf.length > 0) {
-    dnfSection.style.display = 'block';
+    dnfSec.style.display = 'block';
     document.getElementById('dnf-list').innerHTML = dnf.map(r => runnerCardHtml(r, true)).join('');
   } else {
-    dnfSection.style.display = 'none';
+    dnfSec.style.display = 'none';
   }
 }
 
-function partialKm(r) {
-  const base = r.loops * LOOP_KM;
-  if (r.state === 'waiting_end_start') return base + 3.0;
-  return base;
-}
-function chronoId(name) { return 'ch_' + name.replace(/[^a-z0-9]/gi,'_'); }
-
 function runnerCardHtml(r, isDnf) {
-  const displayName = r.nickname || r.name;
   const st = stateInfo(r.state);
   const km = partialKm(r);
   const cid = chronoId(r.name);
-  const hasLoop = !isDnf && r.loop_start_time && r.state !== 'waiting_start';
   const checkSplit = (r.state === 'waiting_end_start' && r.loop_start_time && r.loop_checkpoint_time)
     ? Math.round((r.loop_checkpoint_time - r.loop_start_time) / 1000) : null;
+  const bib = r.bib_number ? `#${r.bib_number} ` : '';
   return `
   <div class="runner-card ${isDnf?'dnf-card':''}" onclick="openRunnerDetail('${r.name.replace(/'/g,"\\'")}')">
     <div class="r-avatar">${avatarEl(r.name, r.photo)}</div>
     <div class="r-main">
-      <div class="r-name" style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
-        <span>${displayName}</span>
+      <div class="r-name">
+        <span>${bib}${r.name}</span>
         ${isDnf?'<span class="dnf-badge">DNF</span>':''}
       </div>
-      <div class="r-meta">
-        ${r.bib_number?`<span class="r-bib">#${r.bib_number}</span>`:''}
-        ${r.nickname?`<span class="r-realname">${r.name}</span>`:''}
-      </div>
       ${!isDnf?`<div class="r-status"><span class="pill ${st.cls}"><i class="ti ${st.icon}"></i>${st.label}</span></div>`:''}
-      ${checkSplit!==null?`<div class="checkpoint-split"><i class="ti ti-flag-2"></i> Checkpoint : ${fmtTime(checkSplit)}</div>`:''}
+      ${checkSplit!==null?`<div class="checkpoint-split"><i class="ti ti-flag-2"></i> Check : ${fmtTimeSmall(checkSplit)}</div>`:''}
     </div>
     <div class="r-right">
+      <div class="r-km">${km.toFixed(1)}</div>
+      <div class="r-km-lbl">Kilomètres</div>
       <div class="r-loops">${r.loops}</div>
-      <div class="r-loops-lbl">boucle${r.loops!==1?'s':''}</div>
-      <div class="r-km">${km.toFixed(1)} km</div>
-      ${r.best_time?`<div class="r-best"><i class="ti ti-bolt" style="font-size:11px"></i>${fmtTime(r.best_time)}</div>`:''}
+      <div class="r-loops-lbl">Boucles</div>
     </div>
   </div>`;
 }
 
-// ---- CLASSEMENT ----
+// ============ CLASSEMENT ============
 function renderClassement(runners) {
-  const el = document.getElementById('classement-list');
   const sorted = [...runners].sort((a,b) => {
     if (a.dnf !== b.dnf) return a.dnf - b.dnf;
     if (b.loops !== a.loops) return b.loops - a.loops;
     return (a.best_time||99999) - (b.best_time||99999);
   });
+
+  // Podium top 3
+  const top3 = sorted.filter(r => !r.dnf).slice(0, 3);
+  const podiumOrder = top3.length >= 2 ? [top3[1], top3[0], top3[2]].filter(Boolean) : top3;
+  const podiumClasses = top3.length >= 2 ? ['p2', 'p1', 'p3'] : ['p1'];
+
+  const podiumEl = document.getElementById('podium-wrap');
+  if (top3.length > 0) {
+    podiumEl.innerHTML = podiumOrder.map((r, i) => `
+      <div class="podium-item">
+        <div class="podium-name">${r.name.split(' ')[0]}<br>${r.name.split(' ').slice(1).join(' ')}</div>
+        <div class="podium-bar ${podiumClasses[i]}">
+          <div class="podium-loops">${r.loops}</div>
+          <div class="podium-loops-lbl">boucles</div>
+        </div>
+      </div>`).join('');
+  } else {
+    podiumEl.innerHTML = '';
+  }
+
+  // Liste complète
+  const el = document.getElementById('classement-list');
   if (!sorted.length) {
-    el.innerHTML = '<div class="empty-state"><i class="ti ti-trophy"></i><p>Aucun coureur pour l\'instant.</p></div>';
+    el.innerHTML = '<div class="empty-state"><i class="ti ti-trophy"></i><p>Aucun coureur.</p></div>';
     return;
   }
-  const medals = ['🥇','🥈','🥉'];
   let rank = 0;
   el.innerHTML = sorted.map(r => {
     if (!r.dnf) rank++;
-    const displayName = r.nickname || r.name;
+    const bib = r.bib_number ? `<span style="color:var(--accent)">#${r.bib_number}</span>` : '';
     return `
-    <div class="rank-card ${r.dnf?'dnf-card':rank<=3?'r'+rank:''}" onclick="openRunnerDetail('${r.name.replace(/'/g,"\\'")}')">
-      <div class="rank-num">${r.dnf?'DNF':rank<=3?medals[rank-1]:'#'+rank}</div>
+    <div class="rank-card ${r.dnf?'dnf-card':''}" onclick="openRunnerDetail('${r.name.replace(/'/g,"\\'")}')">
+      <div class="rank-num" style="color:${r.dnf?'var(--muted)':rank<=3?['#f97316','#60a5fa','#8a8a8a'][rank-1]:'var(--muted)'}">${r.dnf?'DNF':rank}</div>
       <div class="rank-av">${avatarEl(r.name, r.photo)}</div>
       <div class="rank-info">
-        <div class="rank-name">${displayName}</div>
+        <div class="rank-name">${r.name}</div>
         <div class="rank-detail">
-          ${r.bib_number?`<span style="color:var(--accent)">#${r.bib_number}</span>`:''}
+          ${bib}
           <span>${(r.loops*LOOP_KM).toFixed(1)} km</span>
-          ${r.best_time?`<span><i class="ti ti-bolt" style="font-size:11px"></i>${pace(r.best_time)}/km</span>`:''}
+          ${r.best_time?`<span>⚡ ${pace(r.best_time)}/km</span>`:''}
         </div>
       </div>
-      <div class="rank-loops">${r.loops}<span>boucle${r.loops!==1?'s':''}</span></div>
+      <div class="rank-loops">${r.loops}<span>boucles</span></div>
     </div>`;
   }).join('');
 }
 
-// ---- PROFIL ----
+// ============ CARTE ============
+function initMap() {
+  mapInit = true;
+  const GPX_TRACK = [
+  [47.339949,4.962243],[47.339988,4.962754],[47.340103,4.963822],[47.340107,4.964028],[47.340063,4.964249],[47.339972,4.964447],[47.339572,4.965413],[47.33947,4.966303],[47.339301,4.967099],[47.339132,4.967682],[47.338867,4.968318],[47.338396,4.969136],[47.337996,4.969721],[47.337561,4.970273],[47.337109,4.970791],[47.336632,4.971254],[47.336125,4.97163],[47.335617,4.971964],[47.335093,4.972219],[47.334557,4.972411],[47.334012,4.972532],[47.333461,4.972575],[47.332912,4.972535],[47.332375,4.972415],[47.331864,4.972225],[47.331385,4.971968],[47.330949,4.971652],[47.330566,4.971286],[47.330248,4.970879],[47.330004,4.970441],[47.329841,4.969981],[47.329763,4.969507],[47.329772,4.969028],[47.329866,4.968554],[47.330038,4.968095],[47.330281,4.967661],[47.330578,4.967265],[47.330915,4.966923],[47.331272,4.966652],[47.331631,4.966469],[47.331974,4.966388],[47.332289,4.966419],[47.332569,4.966558],[47.332813,4.966793],[47.333029,4.967104],[47.333226,4.967459],[47.333417,4.967824],[47.333616,4.968163],[47.333836,4.968444],[47.334086,4.968638],[47.33436,4.968728],[47.334646,4.968703],[47.334926,4.968564],[47.335182,4.968319],[47.335396,4.967986],[47.335551,4.967586],[47.335635,4.967138],[47.335641,4.966659],[47.335568,4.966164],[47.335421,4.965668],[47.335209,4.965183],[47.334947,4.96472],[47.334649,4.964292],[47.334336,4.963908],[47.334025,4.96358],[47.333739,4.963314],[47.333495,4.963117],[47.333308,4.962992],[47.333188,4.962935],[47.333138,4.962944],[47.333161,4.963012],[47.33325,4.963129],[47.333394,4.963277],[47.333576,4.963435],[47.333779,4.963583],[47.333983,4.963699],[47.334172,4.963767],[47.334327,4.963774],[47.334437,4.963717],[47.334491,4.963597],[47.334489,4.963422],[47.334433,4.963205],[47.334334,4.962964],[47.334207,4.962717],[47.334068,4.962482],[47.333937,4.962278],[47.333832,4.962121],[47.333767,4.962025],[47.333751,4.961996],[47.334,4.962],[47.334372,4.962054],[47.334904,4.962119],[47.335489,4.962183],[47.336099,4.962228],[47.336694,4.962237],[47.337232,4.96219],[47.337671,4.962076],[47.337977,4.961892],[47.338127,4.961648],[47.338114,4.961363],[47.337948,4.961064],[47.337651,4.960783],[47.337256,4.960549],[47.336803,4.960391],[47.336335,4.960327],[47.335895,4.960366],[47.335524,4.960508],[47.335262,4.960744],[47.335139,4.961057],[47.335171,4.961419],[47.335362,4.961795],[47.335701,4.96214],[47.336163,4.962405],[47.336705,4.962535],[47.337276,4.962485],[47.337817,4.962246],[47.338272,4.961841],[47.338594,4.961315],[47.338748,4.960724],[47.338719,4.960142],[47.338508,4.959641],[47.338134,4.959192],[47.337635,4.958858],[47.337056,4.958694],[47.336445,4.958742],[47.335855,4.959],[47.335335,4.959454],[47.334928,4.960079],[47.334672,4.960835],[47.334586,4.961665],[47.334676,4.962509],[47.334937,4.963308],[47.335348,4.964],[47.335883,4.964527],[47.336503,4.964841],[47.337155,4.964913],[47.337786,4.964732],[47.338342,4.964316],[47.338774,4.963707],[47.33904,4.962965],[47.339113,4.962152],[47.338993,4.961343],[47.338692,4.960604],[47.33824,4.96],[47.337679,4.959594],[47.337053,4.959445],[47.336405,4.959562],[47.335775,4.959941],[47.335201,4.960561],[47.334714,4.961384],[47.334342,4.962358],[47.334106,4.963421],[47.334013,4.964507],[47.334066,4.96556],[47.334261,4.966523],[47.334589,4.967343],[47.335025,4.967975],[47.335547,4.968381],[47.336123,4.968535],[47.336716,4.968424],[47.337288,4.968054],[47.337799,4.967449],[47.338215,4.966647],[47.338511,4.965698],[47.338671,4.964656],[47.338685,4.963577],[47.338554,4.962521],[47.338286,4.961541],[47.337898,4.960691],[47.337407,4.960025],[47.336839,4.959594],[47.336222,4.959443],[47.335584,4.959581],[47.334949,4.960006],[47.334344,4.960704],[47.333789,4.961643],[47.333299,4.962779],[47.332885,4.964058],[47.332555,4.965418],[47.332311,4.966794],[47.332149,4.968118],[47.332064,4.96932],[47.332049,4.970337],[47.332094,4.97112],[47.33219,4.97163],[47.332324,4.97184],[47.332482,4.971744],[47.332651,4.971357],[47.332816,4.970706],[47.332965,4.969827],[47.333083,4.96877],[47.333163,4.967588],[47.333197,4.966335],[47.333183,4.965066],[47.333119,4.963836],[47.33301,4.962699],[47.332861,4.961707],[47.332679,4.960909],[47.33247,4.960351],[47.332243,4.960073],[47.332006,4.960111],[47.331769,4.960492],[47.331541,4.961235],[47.331329,4.962344],[47.331139,4.96381],[47.330972,4.965612],[47.330827,4.967719],[47.330701,4.970088],[47.33059,4.972667],[47.330489,4.975397],[47.330393,4.978212],[47.330295,4.981042],[47.330191,4.983819],[47.330079,4.986469],[47.329956,4.988921],[47.329949,4.988956],[47.330372,4.988205],[47.330949,4.987371],[47.331664,4.98647],[47.332481,4.985619],[47.33336,4.984831],[47.334258,4.984118],[47.335131,4.983487],[47.335936,4.982942],[47.336631,4.982487],[47.337177,4.982125],[47.337539,4.981858],[47.337688,4.981688],[47.337599,4.981614],[47.337262,4.981636],[47.336674,4.981752],[47.335847,4.981959],[47.334806,4.982252],[47.333578,4.982624],[47.332202,4.983063],[47.330717,4.983555],[47.330717,4.983555],[47.329167,4.984084],[47.327602,4.984635],[47.326077,4.985194],[47.32465,4.985746],[47.323374,4.986278],[47.322297,4.986773],[47.321462,4.987217],[47.320905,4.987593],[47.320654,4.987887],[47.320723,4.988082],[47.321122,4.988163],[47.321844,4.988113],[47.322878,4.987912],[47.324204,4.987539],[47.325796,4.986972],[47.327619,4.986185],[47.329623,4.985149],[47.331753,4.983829],[47.33395,4.982192],[47.336147,4.980199],[47.338268,4.977813],[47.340232,4.975],[47.33996,4.975073],[47.339949,4.962243]
+  ];
+  const map = L.map('map', { zoomControl: true }).setView([47.334786, 4.977858], 13);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles © Esri'
+  }).addTo(map);
+  const poly = L.polyline(GPX_TRACK, { color: '#f97316', weight: 5, opacity: .95 }).addTo(map);
+  map.fitBounds(poly.getBounds(), { padding: [20, 20] });
+  const mkS = L.divIcon({ className:'', html:'<div style="background:#e8392a;width:20px;height:20px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(232,57,42,.9);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff">S</div>', iconSize:[20,20], iconAnchor:[10,10] });
+  L.marker([47.339949, 4.962243], { icon: mkS }).addTo(map).bindPopup('<b>START / Arrivée</b>');
+  const mkC = L.divIcon({ className:'', html:'<div style="background:#60a5fa;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(96,165,250,.9);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff">C</div>', iconSize:[18,18], iconAnchor:[9,9] });
+  L.marker([47.330372, 4.988205], { icon: mkC }).addTo(map).bindPopup('<b>Checkpoint</b>');
+}
+
+// ============ PROFIL ============
 async function renderProfil() {
+  if (myMode === 'spectator') return;
   if (!myName) {
     document.getElementById('profil-identify').style.display = 'block';
     document.getElementById('profil-main').style.display = 'none';
@@ -728,12 +500,9 @@ async function renderProfil() {
   }
   document.getElementById('profil-identify').style.display = 'none';
   document.getElementById('profil-main').style.display = 'block';
-
-  // Reset historique avant rechargement (évite les données résiduelles)
-  document.getElementById('history-card').style.display = 'none';
+  document.getElementById('history-section').style.display = 'none';
   document.getElementById('history-list').innerHTML = '';
-  const apb = document.getElementById('avg-pace-box');
-  if (apb) apb.style.display = 'none';
+  document.getElementById('avg-time-box').style.display = 'none';
 
   try {
     const [lbRes, loopRes] = await Promise.all([
@@ -745,70 +514,129 @@ async function renderProfil() {
     const me = runners.find(r => r.name === myName);
 
     if (me) {
-      const displayName = me.nickname || me.name;
-      document.getElementById('profile-display-name').textContent = displayName;
-      document.getElementById('profile-real-name').textContent = me.nickname ? me.name : '';
+      const bib = me.bib_number ? `#${me.bib_number} ` : '';
+      document.getElementById('profile-bib-name').textContent = bib + me.name;
       document.getElementById('pstat-loops').textContent = me.loops;
-      document.getElementById('pstat-km').textContent = (me.loops*LOOP_KM).toFixed(1);
-      document.getElementById('pstat-best').textContent = me.best_time ? pace(me.best_time) : '--';
-      if (me.nickname) document.getElementById('nickname-input').value = me.nickname;
-      if (me.bib_number) {
-        const badge = document.getElementById('profile-bib-badge');
-        badge.style.display = 'inline-block';
-        badge.textContent = 'Dossard #'+me.bib_number;
-      }
+      document.getElementById('pstat-km').textContent = (me.loops * LOOP_KM).toFixed(1);
+      document.getElementById('pstat-best').textContent = pace(me.best_time);
+
       const st = stateInfo(me.state);
       document.getElementById('profile-state-el').innerHTML =
-        me.dnf ? '<span class="profile-state pill" style="background:#2d1515;color:#f87171"><i class="ti ti-flag-off"></i> Abandon enregistré (DNF)</span>'
-                : `<span class="profile-state pill ${st.cls}"><i class="ti ${st.icon}"></i>${st.label}</span>`;
+        me.dnf ? '<span class="pill" style="background:#2d1515;color:#f87171"><i class="ti ti-flag-off"></i> Abandon enregistré (DNF)</span>'
+                : `<span class="pill ${st.cls}"><i class="ti ${st.icon}"></i>${st.label}</span>`;
 
-      // Bouton DNF
       const dnfBtn = document.getElementById('dnf-btn');
       if (me.dnf) {
-        dnfBtn.innerHTML = '<i class="ti ti-refresh"></i> Reprendre la course';
+        dnfBtn.innerHTML = '<i class="ti ti-refresh"></i> REPRENDRE LA COURSE';
         dnfBtn.onclick = cancelDNF;
         dnfBtn.className = 'btn btn-green mb';
       } else {
-        dnfBtn.innerHTML = '<i class="ti ti-flag-off"></i> Abandonner la course (DNF)';
+        dnfBtn.innerHTML = '<i class="ti ti-flag-off"></i> ABANDONNER LA COURSE';
         dnfBtn.onclick = confirmDNF;
         dnfBtn.className = 'btn btn-danger mb';
       }
-    }
 
-    const meData = runners.find(r => r.name === myName);
-    const photo = getPhoto(myName, meData?.photo);
-    document.getElementById('profile-photo-el').innerHTML = photo ? `<img src="${photo}">` : `<i class="ti ti-user"></i>`;
+      const photo = getPhoto(myName, me.photo);
+      document.getElementById('profile-photo-el').innerHTML = photo ? `<img src="${photo}">` : `<i class="ti ti-photo"></i>`;
 
-    if (loops.length > 0) {
-      document.getElementById('history-card').style.display = 'block';
-      const avg = loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length;
-      document.getElementById('avg-pace-box').style.display = 'block';
-      document.getElementById('avg-pace-val').textContent = pace(Math.round(avg));
+      if (loops.length > 0) {
+        const avg = loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length;
+        document.getElementById('avg-time-box').style.display = 'block';
+        document.getElementById('avg-time-val').textContent = fmtTime(Math.round(avg));
 
-      document.getElementById('history-list').innerHTML = loops.slice().reverse().map((l, i) => {
-        const num = loops.length - i;
-        const isBest = l.duration_seconds === me?.best_time;
-        return `
-        <div class="history-item">
-          <div class="history-num" style="${isBest?'background:var(--amber);color:#000':''}">${num}</div>
-          <div style="flex:1">
-            <div style="display:flex;align-items:center;gap:6px">
-              <span class="history-time">${fmtTime(l.duration_seconds)}</span>
-              ${isBest?'<span style="font-size:10px;background:#3a2a00;color:var(--amber);border-radius:4px;padding:1px 6px;font-weight:700">⚡ BEST</span>':''}
+        document.getElementById('history-section').style.display = 'block';
+        document.getElementById('history-list').innerHTML = loops.slice().reverse().map((l, i) => {
+          const num = loops.length - i;
+          const isBest = l.duration_seconds === me.best_time;
+          return `
+          <div class="history-item">
+            <div class="history-num ${isBest?'best':''}">#${num}</div>
+            <div style="flex:1">
+              <div class="history-time">${fmtTimeSmall(l.duration_seconds)}</div>
+              <div class="history-date">${new Date(l.end_time).toLocaleString('fr-FR')}</div>
             </div>
-            <div class="history-date">${new Date(l.end_time).toLocaleString('fr-FR')}</div>
-          </div>
-          <div style="text-align:right;flex-shrink:0">
-            <div style="font-size:14px;font-weight:700;color:var(--blue)">${pace(l.duration_seconds)}</div>
-            <div style="font-size:10px;color:var(--muted)">min/km</div>
-          </div>
-        </div>`;
-      }).join('');
+            <div class="history-pace">${pace(l.duration_seconds)}<span>min/km</span></div>
+          </div>`;
+        }).join('');
+      }
     }
   } catch(e) { console.error(e); }
 }
 
-// ---- PARTICIPANTS ----
+// ============ MODAL DÉTAIL ============
+async function openRunnerDetail(name) {
+  document.getElementById('modal-overlay').style.display = 'block';
+  document.getElementById('modal-content').innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted)"><i class="ti ti-loader-2" style="font-size:32px;animation:spin 1s linear infinite"></i></div>';
+
+  try {
+    const [lbRes, loopRes] = await Promise.all([
+      fetch('/api/leaderboard'),
+      fetch('/api/runner/'+encodeURIComponent(name)+'/loops')
+    ]);
+    const runners = await lbRes.json();
+    const loops = await loopRes.json();
+    const runner = runners.find(r => r.name === name);
+    if (!runner) return;
+
+    const avgPaceSec = loops.length ? loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length : null;
+    const photo = getPhoto(name, runner.photo);
+    const bib = runner.bib_number ? `#${runner.bib_number} ` : '';
+
+    let html = `
+      <div class="modal-allure-name">
+        <div class="modal-allure-box">
+          <div class="modal-allure-val">${pace(runner.best_time)}</div>
+          <div class="modal-allure-lbl">Allure<br>Moyenne</div>
+        </div>
+        <div class="modal-name-block">
+          ${photo?`<img src="${photo}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:8px">`:''}
+          <div class="modal-runner-name">${bib}${runner.name}</div>
+          ${runner.dnf?'<span class="dnf-badge" style="margin-top:4px;display:inline-block">DNF</span>':''}
+        </div>
+      </div>
+      <div class="stats-row" style="margin-bottom:12px">
+        <div class="stat-box"><div class="val">${runner.loops}</div><div class="lbl">Boucles</div></div>
+        <div class="stat-box"><div class="val">${(runner.loops*LOOP_KM).toFixed(1)}</div><div class="lbl">Km Total</div></div>
+        <div class="stat-box"><div class="val" style="font-size:18px">${pace(runner.best_time)}</div><div class="lbl">Meilleure Allure</div></div>
+      </div>`;
+
+    if (avgPaceSec) {
+      html += `
+      <div class="avg-time-box" style="margin-bottom:12px">
+        <div class="avg-time-label">Temps moyen</div>
+        <div class="avg-time-val">${fmtTime(Math.round(avgPaceSec))}</div>
+        <div class="avg-time-sub">par boucle</div>
+      </div>`;
+    }
+
+    if (loops.length > 0) {
+      html += `<div class="history-title">Détail des boucles</div>`;
+      html += loops.map((l, i) => {
+        const isBest = l.duration_seconds === runner.best_time;
+        return `
+        <div class="history-item">
+          <div class="history-num ${isBest?'best':''}">#${i+1}</div>
+          <div style="flex:1">
+            <div class="history-time">${fmtTimeSmall(l.duration_seconds)}</div>
+            <div class="history-date">${new Date(l.end_time).toLocaleString('fr-FR')}</div>
+          </div>
+          <div class="history-pace">${pace(l.duration_seconds)}<span>min/km</span></div>
+        </div>`;
+      }).join('');
+    } else {
+      html += '<div class="empty-state" style="padding:20px"><p>Aucune boucle complétée.</p></div>';
+    }
+
+    document.getElementById('modal-content').innerHTML = html;
+  } catch(e) { console.error(e); }
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay'))
+    document.getElementById('modal-overlay').style.display = 'none';
+}
+
+// ============ PARTICIPANTS ============
 async function loadParticipants() {
   try {
     const res = await fetch('/api/participants');
@@ -826,41 +654,41 @@ function filterParticipants(q) {
   }
   el.innerHTML = filtered.map(p => `
     <div class="participant-item" onclick="selectParticipant('${p.name.replace(/'/g,"\\'")}')">
-      <div class="p-bib">${p.bib_number||'?'}</div>
-      <div><div class="p-name">${p.name}</div></div>
+      <div class="p-avatar">${avatarEl(p.name, null)}</div>
+      <div>
+        ${p.bib_number?`<div class="p-bib">#${p.bib_number}</div>`:''}
+        <div class="p-name">${p.name}</div>
+      </div>
     </div>`).join('');
 }
 
-function selectParticipant(name) { myName = name; localStorage.setItem('backyard_runner', name); renderProfil(); loadData(); }
-function showManual() { document.getElementById('manual-form').style.display = 'block'; }
-function doManualIdentify() { const n = document.getElementById('manual-input').value.trim(); if(n) selectParticipant(n); }
-
-async function saveNickname() {
-  const nickname = document.getElementById('nickname-input').value.trim();
-  if (!myName) return;
-  await fetch('/api/runners/'+encodeURIComponent(myName)+'/nickname', {
-    method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nickname})
-  });
-  await loadData(); renderProfil();
+function selectParticipant(name) {
+  myName = name;
+  localStorage.setItem('backyard_runner', name);
+  renderProfil();
+  loadData();
 }
 
-function handlePhoto(input) {
+function showManual() { document.getElementById('manual-form').style.display = 'block'; }
+function doManualIdentify() {
+  const n = document.getElementById('manual-input').value.trim();
+  if (n) selectParticipant(n);
+}
+
+// ============ ACTIONS PROFIL ============
+async function handlePhoto(input) {
   const file = input.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = async e => {
     const photoData = e.target.result;
-    // Sauvegarder en local
     localStorage.setItem('photo_'+myName, photoData);
-    // Envoyer au serveur (visible par tous)
     try {
       await fetch('/api/runners/'+encodeURIComponent(myName)+'/photo', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photo: photoData })
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ photo: photoData })
       });
-    } catch(e) { console.error('Erreur upload photo:', e); }
-    await loadData();
-    renderProfil();
+    } catch(e) {}
+    await loadData(); renderProfil();
   };
   reader.readAsDataURL(file);
 }
@@ -876,8 +704,13 @@ async function cancelDNF() {
   await loadData(); renderProfil();
 }
 
-function logout() { myName = null; localStorage.removeItem('backyard_runner'); renderProfil(); }
+function logout() {
+  myName = null;
+  localStorage.removeItem('backyard_runner');
+  renderProfil();
+}
 
+// ============ CHARGEMENT ============
 async function loadData() {
   try {
     const res = await fetch('/api/leaderboard');
@@ -888,18 +721,8 @@ async function loadData() {
   } catch(e) {}
 }
 
-loadData(); renderProfil(); setInterval(loadData, 5000);
-
-// Chronomètres live : mis à jour chaque seconde
-let chronoRunners = [];
-setInterval(() => {
-  chronoRunners.forEach(r => {
-    if (!r.loop_start_time || r.state === 'waiting_start') return;
-    const elapsed = Math.floor((Date.now() - r.loop_start_time) / 1000);
-    const el = document.getElementById(chronoId(r.name));
-    if (el) el.textContent = '⏱ ' + fmtTime(elapsed);
-  });
-}, 1000);
+// ============ INIT ============
+initApp();
 </script>
 </body>
 </html>

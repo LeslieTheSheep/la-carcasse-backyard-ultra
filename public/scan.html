@@ -7,7 +7,7 @@
   <title>Scan — La Carcasse</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 </head>
@@ -15,15 +15,13 @@
 <div class="scan-page">
   <div class="scan-logo"><img src="logo.png" alt="La Carcasse"></div>
 
-  <!-- Pas identifié -->
   <div id="s-norunner" style="display:none;width:100%;max-width:340px;text-align:center">
     <i class="ti ti-user-question" style="font-size:64px;color:var(--muted);margin-bottom:16px;display:block"></i>
-    <div style="font-size:20px;font-weight:700;margin-bottom:8px">Pas identifié</div>
+    <div style="font-family:var(--font-title);font-size:28px;letter-spacing:1px;margin-bottom:8px">PAS IDENTIFIÉ</div>
     <div style="font-size:14px;color:var(--muted);margin-bottom:24px">Tu dois d'abord te connecter dans l'application.</div>
-    <a href="/" class="btn btn-accent"><i class="ti ti-arrow-left"></i> Ouvrir l'app</a>
+    <a href="/" class="scan-back-btn"><i class="ti ti-arrow-left"></i> OUVRIR L'APP</a>
   </div>
 
-  <!-- Chargement -->
   <div id="s-loading" style="display:none;text-align:center">
     <div id="s-point-label" class="scan-badge"></div>
     <div id="s-runner-label" class="scan-runner-lbl"></div>
@@ -32,89 +30,56 @@
     </div>
   </div>
 
-  <!-- Résultat -->
   <div id="s-result" style="display:none;width:100%;max-width:360px;text-align:center">
-    <div id="s-result-icon" style="font-size:56px;margin-bottom:10px"></div>
+    <div id="s-result-icon" style="font-size:64px;margin-bottom:10px"></div>
     <div id="s-result-point" class="scan-badge" style="margin-bottom:4px"></div>
     <div id="s-result-runner" class="scan-runner-lbl"></div>
     <div id="s-result-msg" class="scan-result-box"></div>
-
-    <!-- Infos contextuelles -->
     <div id="s-context-box" style="display:none;width:100%;margin-bottom:16px"></div>
-
-    <!-- Compte à rebours fermeture -->
-    <div id="s-countdown-box" style="margin-bottom:16px;display:none">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Retour à l'application dans</div>
-      <div id="s-countdown-val" style="font-size:36px;font-weight:900;color:var(--accent)">4</div>
-      <div style="width:100%;height:4px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden">
-        <div id="s-progress-bar" style="height:100%;background:var(--accent);width:100%;transition:width 1s linear;border-radius:2px"></div>
-      </div>
+    <div id="s-countdown-box" style="display:none;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:4px;font-weight:600">Retour à l'app dans</div>
+      <div class="scan-countdown-val" id="s-countdown-val">4</div>
+      <div class="scan-progress"><div class="scan-progress-bar" id="s-progress-bar"></div></div>
     </div>
-
-    <!-- Bouton retour manuel -->
-    <a href="/" class="btn btn-accent" style="margin-bottom:10px" id="s-back-btn">
-      <i class="ti ti-layout-dashboard"></i> Retour à l'application
+    <a href="/" class="scan-back-btn" id="s-back-btn">
+      <i class="ti ti-layout-dashboard"></i> RETOUR À L'APPLICATION
     </a>
   </div>
 </div>
 
-<style>
-@keyframes spin { to { transform: rotate(360deg); } }
-.context-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 14px; padding: 16px; margin-bottom: 4px;
-}
-.context-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 0; border-bottom: 1px solid var(--border);
-}
-.context-row:last-child { border-bottom: none; }
-.context-label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
-.context-val { font-size: 18px; font-weight: 800; }
-</style>
-
 <script>
 const LOOP_KM = 6.0;
-const APP_URL = '/';
-const REDIRECT_DELAY = 4; // secondes avant redirection
 
 function fmtTime(s) {
   if (!s && s !== 0) return '--';
-  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
-  if (h > 0) return `${h}h ${m}m ${sec}s`;
-  if (m > 0) return `${m}m ${sec}s`;
-  return `${sec}s`;
+  const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
+  if (h>0) return `${h}H ${m}M ${sec}S`;
+  if (m>0) return `${m}M ${sec}S`;
+  return `${sec}S`;
 }
 
 function pace(seconds) {
-  const totalMin = seconds / 60 / LOOP_KM;
-  const m = Math.floor(totalMin), s = Math.round((totalMin - m) * 60);
+  if (!seconds || seconds <= 0) return '--';
+  const totalMin = seconds/60/LOOP_KM;
+  const m=Math.floor(totalMin), s=Math.round((totalMin-m)*60);
   return `${m}'${String(s).padStart(2,'0')}"`;
 }
 
-// Ferme l'onglet et retourne à l'app après le délai
 function startAutoRedirect() {
-  const countdownBox = document.getElementById('s-countdown-box');
-  const countdownVal = document.getElementById('s-countdown-val');
-  const progressBar = document.getElementById('s-progress-bar');
-  countdownBox.style.display = 'block';
-
-  let remaining = REDIRECT_DELAY;
-  countdownVal.textContent = remaining;
-
-  // Lancer la barre de progression
-  setTimeout(() => { progressBar.style.width = '0%'; }, 50);
-
-  const interval = setInterval(() => {
+  const box = document.getElementById('s-countdown-box');
+  const val = document.getElementById('s-countdown-val');
+  const bar = document.getElementById('s-progress-bar');
+  box.style.display = 'block';
+  let remaining = 4;
+  val.textContent = remaining;
+  setTimeout(() => { bar.style.width = '0%'; }, 50);
+  const iv = setInterval(() => {
     remaining--;
-    countdownVal.textContent = remaining;
+    val.textContent = remaining;
     if (remaining <= 0) {
-      clearInterval(interval);
-      // Essayer de fermer l'onglet
+      clearInterval(iv);
       window.close();
-      // Si ça ne marche pas (la plupart des navigateurs bloquent ça),
-      // rediriger vers l'app
-      setTimeout(() => { window.location.href = APP_URL; }, 300);
+      setTimeout(() => { window.location.href = '/'; }, 300);
     }
   }, 1000);
 }
@@ -122,19 +87,19 @@ function startAutoRedirect() {
 async function doScan() {
   const name = localStorage.getItem('backyard_runner');
   const point = new URLSearchParams(window.location.search).get('point');
-
   if (!name) { document.getElementById('s-norunner').style.display = 'block'; return; }
 
   const label = point === 'start' ? 'ARRIVÉE' : 'CHECKPOINT';
   document.getElementById('s-loading').style.display = 'block';
   const pl = document.getElementById('s-point-label');
-  pl.textContent = label; pl.className = 'scan-badge ' + point;
+  pl.textContent = label;
+  pl.className = 'scan-badge ' + (point === 'start' ? 'start' : 'checkpoint');
   document.getElementById('s-runner-label').textContent = name;
 
   try {
     const res = await fetch('/api/scan', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, point })
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ name, point })
     });
     const data = await res.json();
 
@@ -144,75 +109,61 @@ async function doScan() {
     document.getElementById('s-result-icon').textContent =
       data.loop_validated ? '🏆' : data.ok ? '✅' : '⚠️';
     const rp = document.getElementById('s-result-point');
-    rp.textContent = label; rp.className = 'scan-badge ' + point;
+    rp.textContent = label;
+    rp.className = 'scan-badge ' + (point === 'start' ? 'start' : 'checkpoint');
     document.getElementById('s-result-runner').textContent = name;
+
     const msg = document.getElementById('s-result-msg');
-    msg.textContent = data.message;
     if (data.pre_race) {
-      msg.className = 'scan-result-box';
+      msg.textContent = data.message;
       msg.style.background = '#1a1a2e';
       msg.style.color = '#a78bfa';
       msg.style.border = '1px solid #4c1d95';
     } else {
+      msg.textContent = data.message;
       msg.className = 'scan-result-box ' + (data.ok ? 'ok' : 'error');
     }
 
-    // ---- INFOS CONTEXTUELLES ----
-    const ctxBox = document.getElementById('s-context-box');
-
+    // Infos contextuelles
+    const ctx = document.getElementById('s-context-box');
     if (data.ok && point === 'checkpoint' && data.elapsed_seconds !== undefined) {
-      ctxBox.style.display = 'block';
-      const elapsed = data.elapsed_seconds;
-      ctxBox.innerHTML = `
-        <div class="context-card">
-          <div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">
-            <i class="ti ti-flag-2"></i> Mi-parcours — 3 km
+      ctx.style.display = 'block';
+      ctx.innerHTML = `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:left">
+          <div style="font-family:var(--font-title);font-size:14px;letter-spacing:1px;color:#60a5fa;margin-bottom:10px"><i class="ti ti-flag-2"></i> MI-PARCOURS — 3 KM</div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase">Temps de passage</span>
+            <span style="font-family:var(--font-title);font-size:18px;color:var(--green)">${fmtTime(data.elapsed_seconds)}</span>
           </div>
-          <div class="context-row">
-            <div class="context-label">Temps de passage</div>
-            <div class="context-val" style="color:var(--green)">${fmtTime(elapsed)}</div>
-          </div>
-          <div class="context-row">
-            <div class="context-label">Allure 1ère moitié</div>
-            <div class="context-val" style="color:var(--blue)">${pace(elapsed * 2)}<span style="font-size:12px;color:var(--muted)"> /km</span></div>
-          </div>
-          <div class="context-row">
-            <div class="context-label">Projection boucle</div>
-            <div class="context-val" style="color:var(--amber)">${fmtTime(elapsed * 2)}</div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0">
+            <span style="font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase">Projection boucle</span>
+            <span style="font-family:var(--font-title);font-size:18px;color:var(--amber)">${fmtTime(data.elapsed_seconds*2)}</span>
           </div>
         </div>`;
-
     } else if (data.ok && data.loop_validated && data.duration) {
-      ctxBox.style.display = 'block';
-      const dur = data.duration;
-      ctxBox.innerHTML = `
-        <div class="context-card">
-          <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">
-            <i class="ti ti-circle-check"></i> Boucle complétée — 6 km
+      ctx.style.display = 'block';
+      ctx.innerHTML = `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:left">
+          <div style="font-family:var(--font-title);font-size:14px;letter-spacing:1px;color:var(--accent);margin-bottom:10px"><i class="ti ti-circle-check"></i> BOUCLE COMPLÉTÉE — 6 KM</div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase">Temps de boucle</span>
+            <span style="font-family:var(--font-title);font-size:18px;color:var(--green)">${fmtTime(data.duration)}</span>
           </div>
-          <div class="context-row">
-            <div class="context-label">Temps de boucle</div>
-            <div class="context-val" style="color:var(--green)">${fmtTime(dur)}</div>
-          </div>
-          <div class="context-row">
-            <div class="context-label">Allure moyenne</div>
-            <div class="context-val" style="color:var(--blue)">${pace(dur)}<span style="font-size:12px;color:var(--muted)"> /km</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0">
+            <span style="font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase">Allure moyenne</span>
+            <span style="font-family:var(--font-title);font-size:18px;color:#60a5fa">${pace(data.duration)} /km</span>
           </div>
         </div>`;
     }
 
-    // Lancer la redirection automatique uniquement si le scan est OK et course commencée
-    if (data.ok && !data.pre_race) {
-      startAutoRedirect();
-    }
+    if (data.ok && !data.pre_race) startAutoRedirect();
 
   } catch(e) {
     document.getElementById('s-loading').style.display = 'none';
     document.getElementById('s-result').style.display = 'block';
     document.getElementById('s-result-icon').textContent = '❌';
-    document.getElementById('s-result-msg').textContent = 'Erreur réseau. Vérifie ta connexion.';
+    document.getElementById('s-result-msg').textContent = 'Erreur réseau.';
     document.getElementById('s-result-msg').className = 'scan-result-box error';
-    // Pas de redirection automatique en cas d'erreur
   }
 }
 

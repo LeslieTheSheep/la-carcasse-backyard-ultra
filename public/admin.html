@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — La Carcasse</title>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 </head>
 <body>
@@ -20,67 +20,61 @@
   </div>
 
   <!-- Import participants -->
-  <div class="form-card" style="margin-bottom:14px">
+  <div class="form-card" style="margin-bottom:12px">
     <h3><i class="ti ti-users"></i> Importer les participants</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">
-      Colle ta liste ci-dessous. Un participant par ligne, au format :<br>
-      <code style="background:var(--card2);padding:2px 6px;border-radius:4px;font-size:12px">1, Alex Leslie</code><br>
-      (numéro de dossard, puis nom séparés par une virgule)
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5">
+      Un participant par ligne : <code style="background:var(--card2);padding:2px 6px;border-radius:4px;font-size:12px">1, Alex Leslie</code>
     </p>
-    <textarea id="import-input" placeholder="1, Alex Leslie&#10;2, Jean Dupont&#10;3, Marie Martin&#10;..." style="margin-bottom:10px;font-family:monospace;font-size:14px"></textarea>
-    <button class="btn btn-accent mb" onclick="importParticipants()">
+    <textarea id="import-input" placeholder="1, Alex Leslie&#10;2, Jean Dupont&#10;3, Marie Martin"></textarea>
+    <br><br>
+    <button class="admin-btn admin-btn-accent" onclick="importParticipants()">
       <i class="ti ti-upload"></i> Importer la liste
     </button>
-    <div id="import-result" style="display:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;margin-top:4px"></div>
+    <div id="import-result" style="display:none;padding:10px;border-radius:8px;font-size:14px;font-weight:600;margin-top:8px;text-align:center"></div>
   </div>
 
-  <!-- Liste actuelle -->
-  <div class="form-card" style="margin-bottom:14px">
+  <!-- Liste participants -->
+  <div class="form-card" style="margin-bottom:12px">
     <h3><i class="ti ti-list"></i> Participants inscrits</h3>
-    <div id="participants-list">
-      <div style="color:var(--muted);font-size:14px;text-align:center;padding:16px">Chargement...</div>
-    </div>
+    <div id="participants-list"><div style="color:var(--muted);font-size:14px;text-align:center;padding:16px">Chargement...</div></div>
   </div>
 
   <!-- Simulation -->
-  <div class="form-card" style="border-color:#4c1d95;margin-bottom:14px">
+  <div class="form-card" style="border-color:#4c1d95;margin-bottom:12px">
     <h3 style="color:#a78bfa"><i class="ti ti-player-play"></i> Mode simulation</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">
-      Simule le départ de la course maintenant pour tester les scans. 
-      Le serveur se comportera comme si il était <strong>8h00 le 1er août</strong>.
-      Les données de test seront effacées à l'arrêt.
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5">
+      Simule le départ pour tester les scans. Le serveur se comportera comme si il était <strong>8h00 le 1er août</strong>.
     </p>
     <div id="sim-status" style="padding:10px;border-radius:8px;font-size:13px;font-weight:600;text-align:center;margin-bottom:12px;background:#1a1a2e;color:#a78bfa;border:1px solid #4c1d95">
       ⏸ Simulation inactive
     </div>
-    <button class="btn mb" style="background:#2e1065;color:#a78bfa;border:1px solid #4c1d95" onclick="startSimulation()" id="btn-sim-start">
+    <button class="admin-btn admin-btn-amber" onclick="startSimulation()" id="btn-sim-start">
       <i class="ti ti-player-play"></i> Lancer la simulation
     </button>
-    <button class="btn" style="background:#2d1515;color:#f87171;border:1px solid #7f1d1d;display:none" onclick="stopSimulation()" id="btn-sim-stop">
+    <button class="admin-btn admin-btn-danger" onclick="stopSimulation()" id="btn-sim-stop" style="display:none">
       <i class="ti ti-player-stop"></i> Arrêter et effacer les données de test
     </button>
   </div>
 
   <!-- Élimination manuelle -->
-  <div class="form-card" style="border-color:#7c2d12;margin-bottom:14px">
+  <div class="form-card" style="border-color:#7c2d12;margin-bottom:12px">
     <h3 style="color:var(--amber)"><i class="ti ti-skull"></i> Élimination manuelle</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">
-      Élimine immédiatement tous les coureurs qui n'ont pas encore scanné leur retour au START.
-      Normalement déclenché automatiquement à chaque heure pile.
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5">
+      Élimine immédiatement tous les coureurs qui ne sont pas encore revenus à l'arrivée.
     </p>
-    <button class="btn" style="background:#3a1f0a;color:var(--amber);border:1px solid #7c2d12;margin-bottom:8px" onclick="eliminateNow()">
+    <button class="admin-btn admin-btn-warning" onclick="eliminateNow()">
       <i class="ti ti-skull"></i> Éliminer les retardataires maintenant
     </button>
-    <div id="elim-result" style="display:none;padding:10px;border-radius:8px;font-size:14px;font-weight:600;text-align:center"></div>
+    <div id="elim-result" style="display:none;padding:10px;border-radius:8px;font-size:14px;font-weight:600;margin-top:8px;text-align:center"></div>
   </div>
 
-  <!-- Reset course -->
+  <!-- Reset -->
   <div class="form-card" style="border-color:#7f1d1d">
-    <h3 style="color:var(--red)"><i class="ti ti-alert-triangle"></i> Zone de danger</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">
+    <h3 style="color:#f87171"><i class="ti ti-alert-triangle"></i> Zone de danger</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5">
       Remet tous les compteurs à zéro. À utiliser uniquement avant ou après la course.
     </p>
-    <button class="btn btn-danger" onclick="resetCourse()">
+    <button class="admin-btn admin-btn-danger" onclick="resetCourse()">
       <i class="ti ti-trash"></i> Remettre la course à zéro
     </button>
   </div>
@@ -103,13 +97,10 @@ async function loadParticipants() {
   }
   el.innerHTML = list.map(p => `
     <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
-      <div class="p-bib">${p.bib_number || '?'}</div>
-      <div style="flex:1">
-        <div style="font-size:15px;font-weight:600">${p.name}</div>
-        ${p.nickname ? `<div style="font-size:12px;color:var(--muted)">Surnom : ${p.nickname}</div>` : ''}
-      </div>
-      <button onclick="removeRunner('${p.name.replace(/'/g,"\\'")}', this)" style="background:#2d1515;border:1px solid #7f1d1d;color:#f87171;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:4px;flex-shrink:0">
-        <i class="ti ti-trash" style="font-size:14px"></i> Retirer
+      <div style="width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0">${p.bib_number||'?'}</div>
+      <div style="flex:1;font-weight:600">${p.name}</div>
+      <button onclick="removeRunner('${p.name.replace(/'/g,"\\'")}', this)" style="background:#2d1515;border:1px solid #7f1d1d;color:#f87171;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px">
+        <i class="ti ti-trash" style="font-size:13px"></i> Retirer
       </button>
     </div>`).join('');
 }
@@ -117,19 +108,16 @@ async function loadParticipants() {
 async function importParticipants() {
   const raw = document.getElementById('import-input').value.trim();
   if (!raw) return;
-  const lines = raw.split('\n').filter(l => l.trim());
-  const participants = lines.map(line => {
+  const participants = raw.split('\n').filter(l=>l.trim()).map(line => {
     const parts = line.split(',');
-    if (parts.length >= 2) {
-      return { bib: parseInt(parts[0].trim()) || null, name: parts.slice(1).join(',').trim() };
-    }
-    return { bib: null, name: line.trim() };
-  }).filter(p => p.name);
+    return parts.length >= 2
+      ? { bib: parseInt(parts[0].trim())||null, name: parts.slice(1).join(',').trim() }
+      : { bib: null, name: line.trim() };
+  }).filter(p=>p.name);
 
   const res = await fetch('/api/admin/import', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ participants })
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ participants })
   });
   const data = await res.json();
   const el = document.getElementById('import-result');
@@ -146,47 +134,42 @@ async function importParticipants() {
 
 async function removeRunner(name, btn) {
   if (!confirm(`Retirer "${name}" ? Ses boucles seront aussi supprimées.`)) return;
-  btn.disabled = true;
-  btn.innerHTML = '...';
-  const res = await fetch('/api/runners/' + encodeURIComponent(name), { method: 'DELETE' });
-  const data = await res.json();
-  if (data.ok) loadParticipants();
-  else { alert('Erreur lors de la suppression.'); btn.disabled = false; }
+  btn.disabled = true; btn.innerHTML = '...';
+  const res = await fetch('/api/runners/'+encodeURIComponent(name), { method:'DELETE' });
+  if ((await res.json()).ok) loadParticipants();
+  else { alert('Erreur.'); btn.disabled = false; }
 }
 
 async function startSimulation() {
-  if (!confirm('Lancer la simulation ? Le serveur simulera 8h00 le 1er août et démarrera les boucles.')) return;
-  const res = await fetch('/api/admin/simulation/start', { method: 'POST' });
+  if (!confirm('Lancer la simulation ?')) return;
+  const res = await fetch('/api/admin/simulation/start', { method:'POST' });
   const data = await res.json();
-  document.getElementById('sim-status').textContent = '▶️ ' + data.message;
-  document.getElementById('sim-status').style.background = '#052e16';
-  document.getElementById('sim-status').style.color = '#22c55e';
-  document.getElementById('sim-status').style.borderColor = '#166534';
+  const el = document.getElementById('sim-status');
+  el.textContent = '▶️ ' + data.message;
+  el.style.background = '#052e16'; el.style.color = '#22c55e'; el.style.borderColor = '#166534';
   document.getElementById('btn-sim-start').style.display = 'none';
   document.getElementById('btn-sim-stop').style.display = 'flex';
 }
 
 async function stopSimulation() {
-  if (!confirm('Arrêter la simulation ? Les données de test seront effacées.')) return;
-  const res = await fetch('/api/admin/simulation/stop', { method: 'POST' });
-  const data = await res.json();
-  document.getElementById('sim-status').textContent = '⏸ Simulation inactive';
-  document.getElementById('sim-status').style.background = '#1a1a2e';
-  document.getElementById('sim-status').style.color = '#a78bfa';
-  document.getElementById('sim-status').style.borderColor = '#4c1d95';
+  if (!confirm('Arrêter la simulation ?')) return;
+  await fetch('/api/admin/simulation/stop', { method:'POST' });
+  const el = document.getElementById('sim-status');
+  el.textContent = '⏸ Simulation inactive';
+  el.style.background = '#1a1a2e'; el.style.color = '#a78bfa'; el.style.borderColor = '#4c1d95';
   document.getElementById('btn-sim-start').style.display = 'flex';
   document.getElementById('btn-sim-stop').style.display = 'none';
 }
 
 async function eliminateNow() {
-  if (!confirm('💀 Éliminer tous les coureurs pas encore revenus au START ?')) return;
-  const res = await fetch('/api/admin/eliminate', { method: 'POST' });
+  if (!confirm('💀 Éliminer tous les coureurs pas encore revenus ?')) return;
+  const res = await fetch('/api/admin/eliminate', { method:'POST' });
   const data = await res.json();
   const el = document.getElementById('elim-result');
   el.style.display = 'block';
   if (data.eliminated === 0) {
-    el.style.background = '#1e2a40'; el.style.color = 'var(--blue)';
-    el.textContent = '✅ Aucun coureur à éliminer — tout le monde est au START.';
+    el.style.background = '#1e2a40'; el.style.color = '#60a5fa';
+    el.textContent = '✅ Aucun coureur à éliminer.';
   } else {
     el.style.background = '#2d1a08'; el.style.color = 'var(--amber)';
     el.textContent = `💀 ${data.eliminated} coureur(s) éliminé(s).`;
@@ -196,7 +179,7 @@ async function eliminateNow() {
 
 async function resetCourse() {
   if (!confirm('⚠️ Es-tu sûr ? Toutes les boucles seront supprimées !')) return;
-  await fetch('/api/admin/reset', { method: 'POST' });
+  await fetch('/api/admin/reset', { method:'POST' });
   alert('Course remise à zéro.');
 }
 
