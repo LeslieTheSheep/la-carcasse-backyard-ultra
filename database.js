@@ -72,7 +72,8 @@ function cancelDNF(name) {
 // Élimination automatique : DNF tous les coureurs pas encore revenus au START
 // Démarre automatiquement une nouvelle boucle pour tous les coureurs actifs
 function startNewLoopForAll(now) {
-  // Coureurs actifs, pas DNF, en attente du start (boucle précédente terminée ou début de course)
+  // Utiliser getNow() si pas de timestamp fourni
+  const startTime = now || getNow();
   const runners = db.prepare(`
     SELECT * FROM runners WHERE dnf=0 AND state='waiting_start'
   `).all();
@@ -82,7 +83,7 @@ function startNewLoopForAll(now) {
   `);
 
   const tx = db.transaction((list) => {
-    list.forEach(r => stmt.run(now, r.id));
+    list.forEach(r => stmt.run(startTime, r.id));
   });
   tx(runners);
   return runners.length;
@@ -123,7 +124,7 @@ function getAllRunners() {
 function processScan(runnerName, point) {
   const runner = getOrCreateRunner(runnerName);
   if (runner.dnf) return { ok: false, message: 'Tu as abandonné la course.' };
-  const now = Date.now();
+  const now = getNow(); // Utilise l'heure simulée si simulation active
 
   if (point === 'start') {
     if (runner.state === 'waiting_start') {

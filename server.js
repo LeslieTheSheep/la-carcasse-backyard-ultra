@@ -72,6 +72,7 @@ app.post('/api/admin/import', (req, res) => {
 
 // Reset course
 app.post('/api/admin/reset', (req, res) => {
+  simulationOffset = null; // Arrêter aussi la simulation si active
   db.resetAll();
   res.json({ ok: true });
 });
@@ -88,8 +89,10 @@ app.post('/api/admin/simulation/start', (req, res) => {
 // Arrêter simulation
 app.post('/api/admin/simulation/stop', (req, res) => {
   simulationOffset = null;
-  db.resetAll();
-  console.log('🛑 Simulation arrêtée.');
+  db.setTimeOverride(null); // Revenir à l'heure réelle
+  db.setTimeOverride(() => getRaceTime()); // Rebrancher correctement
+  db.resetAll(); // Reset complet : états + boucles
+  console.log('🛑 Simulation arrêtée. Reset complet effectué.');
   res.json({ ok: true, message: 'Simulation arrêtée. Données de test effacées.' });
 });
 
@@ -121,7 +124,7 @@ app.post('/api/admin/eliminate', (req, res) => {
 
 // ---- DÉMARRAGE AUTOMATIQUE DES BOUCLES ----
 function startLoopForAllRunners() {
-  const now = Date.now();
+  const now = getRaceTime(); // Utiliser l'heure simulée si simulation active
   const count = db.startNewLoopForAll(now);
   if (count > 0) console.log(`🏃 Boucle démarrée pour ${count} coureur(s)`);
 }
