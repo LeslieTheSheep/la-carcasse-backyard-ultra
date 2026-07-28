@@ -243,14 +243,14 @@ html, body {
 .live-badge {
   margin-left: auto;
   display: flex; align-items: center; gap: 6px;
-  background: #0d2e1a; border: 1px solid #166534;
+  background: #0a1f10; border: 1px solid #1a4a2a;
   border-radius: 20px; padding: 5px 12px;
-  font-size: 12px; font-weight: 700; color: var(--green);
+  font-size: 12px; font-weight: 700; color: #AFF4C6;
   flex-shrink: 0;
 }
 .live-dot {
   width: 7px; height: 7px;
-  background: var(--green); border-radius: 50%;
+  background: #AFF4C6; border-radius: 50%;
   animation: pulse 2s infinite;
 }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
@@ -261,8 +261,8 @@ html, body {
   margin: 10px 14px;
   border-radius: 10px;
   padding: 14px 16px;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: #fff;
+  border: 1px solid #e0e0e0;
   position: relative;
   overflow: hidden;
 }
@@ -282,7 +282,7 @@ html, body {
   font-weight: 700;
   letter-spacing: .15em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: #555;
   margin-bottom: 8px;
   position: relative;
 }
@@ -298,14 +298,14 @@ html, body {
 .cd-val {
   font-family: var(--font-title);
   font-size: 36px;
-  color: #fff;
+  color: #111;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   letter-spacing: 2px;
 }
 .cd-lbl {
   font-size: 9px;
-  color: var(--muted);
+  color: #888;
   text-transform: uppercase;
   letter-spacing: .08em;
   margin-top: 2px;
@@ -447,7 +447,7 @@ html, body {
   font-size: 11px; font-weight: 600;
 }
 .pill i { font-size: 11px; }
-.pill-go    { background: #052e16; color: var(--green); }
+.pill-go    { background: #0a1f10; color: #AFF4C6; }
 .pill-check { background: #1e2a40; color: #60a5fa; }
 .pill-back  { background: #3a1f0a; color: var(--amber); }
 
@@ -656,19 +656,19 @@ html, body {
   gap: 10px;
   width: 100%;
   padding: 16px;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: #fff;
+  border: 1px solid #e0e0e0;
   border-radius: 10px;
-  color: var(--text);
+  color: #111;
   text-decoration: none;
   font-family: var(--font-title);
   font-size: 20px;
   letter-spacing: 1px;
   margin-bottom: 8px;
-  transition: background .15s;
+  transition: opacity .15s;
 }
-.gpx-btn:active { background: var(--card2); }
-.gpx-btn i { font-size: 20px; color: var(--accent); }
+.gpx-btn:active { opacity: .85; }
+.gpx-btn i { font-size: 20px; color: #111; }
 
 .gpx-compat {
   font-size: 11px;
@@ -782,13 +782,14 @@ input[type="text"]:focus { border-color: var(--accent); }
 }
 
 .profile-photo {
-  width: 100%;
-  height: 200px;
+  width: 80px;
+  height: 80px;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden; cursor: pointer;
+  margin: 0 auto;
 }
 .profile-photo img { width: 100%; height: 100%; object-fit: cover; }
 .profile-photo i { font-size: 56px; color: var(--muted); }
