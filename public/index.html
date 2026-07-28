@@ -41,7 +41,7 @@
     <div class="header-logo"><img src="skull.svg" alt="La Carcasse"></div>
     <div class="header-text"><h1>LA CARCASSE</h1><div class="sub">Backyard Ultra · 6km Loop</div></div>
     <div class="live-badge"><div class="live-dot"></div>Live</div>
-    <div class="spectator-mode-btn" id="spectator-mode-btn" onclick="switchMode()">👤 Passer en mode coureur</div>
+
   </header>
 
   <div class="countdown-bar" id="countdown-bar">
@@ -119,7 +119,7 @@
         <div class="stats-row" style="margin-top:14px">
           <div class="stat-box"><div class="val" id="pstat-loops">0</div><div class="lbl">Boucles</div></div>
           <div class="stat-box"><div class="val" id="pstat-km">0</div><div class="lbl">Km Total</div></div>
-          <div class="stat-box"><div class="val" id="pstat-best">--</div><div class="lbl">Meill. Allure</div></div>
+          <div class="stat-box"><div class="val" id="pstat-best">--</div><div class="lbl">Meill. Boucle</div></div>
         </div>
         <div class="avg-time-box" id="avg-time-box" style="display:none">
           <div class="avg-time-label">Temps moyen</div>
@@ -130,7 +130,7 @@
           <i class="ti ti-flag-off"></i> ABANDONNER LA COURSE
         </button>
         <div class="change-runner" onclick="logout()">C'est pas toi ?</div>
-        <div id="mode-switch-btn" class="mode-switch" onclick="switchMode()"></div>
+
         <div id="history-section" class="history-section" style="display:none">
           <div class="history-title">Détail des boucles</div>
           <div id="history-list"></div>
@@ -187,7 +187,6 @@ function startApp(){
 function applyMode(){
   const s=myMode==='spectator';
   document.getElementById('nav-profil-btn').style.display=s?'none':'';
-  document.getElementById('spectator-mode-btn').style.display=s?'block':'none';
 }
 function switchMode(){
   const newMode=myMode==='runner'?'spectator':'runner';
@@ -198,8 +197,6 @@ function switchMode(){
   }
 }
 function updateModeSwitchBtn(){
-  const b=document.getElementById('mode-switch-btn');
-  if(b) b.textContent=myMode==='runner'?'Passer en mode spectateur':'';
   const bc=document.getElementById('mode-switch-coureurs');
   if(bc) bc.textContent=myMode==='runner'?'Passer en mode spectateur':'Passer en mode coureur';
 }
@@ -507,7 +504,7 @@ async function renderProfil(){
       document.getElementById('profile-bib-name').textContent=bib+me.name;
       document.getElementById('pstat-loops').textContent=me.loops;
       document.getElementById('pstat-km').textContent=me.loops*LOOP_KM;
-      document.getElementById('pstat-best').textContent=pace(me.best_time);
+      document.getElementById('pstat-best').textContent=me.best_time?fmtTimeSmall(me.best_time):'--';
       const st=stateInfo(me.state);
       document.getElementById('profile-state-el').innerHTML=me.dnf?'<span class="pill" style="background:#2d1515;color:#f87171"><i class="ti ti-flag-off"></i> Abandon (DNF)</span>':`<span class="pill ${st.cls}"><i class="ti ${st.icon}"></i>${st.label}</span>`;
       const db=document.getElementById('dnf-btn');
@@ -560,12 +557,21 @@ async function openDetail(name){
       <div class="stats-row" style="margin-bottom:12px">
         <div class="stat-box"><div class="val">${r.loops}</div><div class="lbl">Boucles</div></div>
         <div class="stat-box"><div class="val">${r.loops*LOOP_KM}</div><div class="lbl">Km Total</div></div>
-        <div class="stat-box"><div class="val" style="font-size:18px">${pace(avg||r.best_time)}</div><div class="lbl">Allure Moy.</div></div>
+        <div class="stat-box"><div class="val" style="font-size:18px">${r.best_time?fmtTimeSmall(r.best_time):'--'}</div><div class="lbl">Meill. Boucle</div></div>
       </div>`;
     if(avg)html+=`<div class="avg-time-box" style="margin-bottom:12px"><div class="avg-time-label">Temps moyen</div><div class="avg-time-val">${fmtTime(Math.round(avg))}</div><div class="avg-time-sub">par boucle</div></div>`;
     if(loops.length){
       html+='<div class="history-title">Détail des boucles</div>';
-      html+=loops.map((l,i)=>{const best=l.duration_seconds===r.best_time;return`<div class="history-item"><div class="history-num" style="${best?'background:var(--accent);color:#fff':''}">#${i+1}</div><div style="flex:1"><div class="history-time">${fmtTimeSmall(l.duration_seconds)}</div><div class="history-date">${new Date(l.end_time).toLocaleString('fr-FR')}</div></div><div class="history-pace">${pace(l.duration_seconds)}<span>min/km</span></div></div>`;}).join('');
+      html+=loops.map((l,i)=>`
+        <div class="history-item">
+          <div class="history-num" style="background:#fff;color:#111">#${i+1}</div>
+          <div style="flex:1">
+            <div style="font-family:var(--font-title);font-size:16px;color:#fff;letter-spacing:.5px">${fmtTimeSmall(l.duration_seconds)}</div>
+          </div>
+          <div style="font-family:var(--font-title);font-size:15px;color:#fff;text-align:right">
+            ${pace(l.duration_seconds)}<span style="display:block;font-family:var(--font-body);font-size:9px;font-weight:600;color:var(--muted)">min/km</span>
+          </div>
+        </div>`).join('');
     }else html+='<div class="empty-state" style="padding:20px"><p>Aucune boucle.</p></div>';
     document.getElementById('modal-content').innerHTML=html;
   }catch(e){console.error(e);}
