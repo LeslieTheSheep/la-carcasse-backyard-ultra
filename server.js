@@ -72,7 +72,8 @@ app.post('/api/admin/import', (req, res) => {
 
 // Reset course
 app.post('/api/admin/reset', (req, res) => {
-  simulationOffset = null; // Arrêter aussi la simulation si active
+  simulationOffset = null;
+  lastLoopNumber = -1;
   db.resetAll();
   res.json({ ok: true });
 });
@@ -81,6 +82,7 @@ app.post('/api/admin/reset', (req, res) => {
 app.post('/api/admin/simulation/start', (req, res) => {
   const raceStartMs = RACE_START.getTime();
   simulationOffset = raceStartMs - Date.now();
+  lastLoopNumber = 0; // Boucle 1 démarre
   db.startNewLoopForAll(getRaceTime());
   console.log('🎮 Simulation démarrée ! Offset:', Math.round(simulationOffset/3600000), 'heures');
   res.json({ ok: true, message: 'Simulation démarrée — il est maintenant 8h00 le 1er août !' });
@@ -89,9 +91,8 @@ app.post('/api/admin/simulation/start', (req, res) => {
 // Arrêter simulation
 app.post('/api/admin/simulation/stop', (req, res) => {
   simulationOffset = null;
-  db.setTimeOverride(null); // Revenir à l'heure réelle
-  db.setTimeOverride(() => getRaceTime()); // Rebrancher correctement
-  db.resetAll(); // Reset complet : états + boucles
+  db.resetAll();
+  lastLoopNumber = -1; // Réinitialiser pour éviter les faux déclenchements
   console.log('🛑 Simulation arrêtée. Reset complet effectué.');
   res.json({ ok: true, message: 'Simulation arrêtée. Données de test effacées.' });
 });
@@ -122,49 +123,59 @@ app.post('/api/admin/eliminate', (req, res) => {
   res.json({ ok: true, eliminated: count });
 });
 
-// ---- DÉMARRAGE AUTOMATIQUE DES BOUCLES ----
+// ---- LOGIQUE DE BOUCLE ROBUSTE (setInterval 10s) ----
+let lastLoopNumber = -1; // Mémorise la dernière boucle traitée
+
 function startLoopForAllRunners() {
-  const now = getRaceTime(); // Utiliser l'heure simulée si simulation active
+  const now = getRaceTime();
   const count = db.startNewLoopForAll(now);
   if (count > 0) console.log(`🏃 Boucle démarrée pour ${count} coureur(s)`);
 }
 
-// ---- ÉLIMINATION + DÉMARRAGE À CHAQUE HEURE PILE ----
-function scheduleNextHour() {
+function getCurrentLoopNumber() {
   const now = getRaceTime();
   const raceStartMs = RACE_START.getTime();
+  if (now < raceStartMs) return -1;
+  return Math.floor((now - raceStartMs) / LOOP_DURATION_MS);
+}
 
-  if (now < raceStartMs) {
-    const delay = raceStartMs - now;
-    console.log(`⏳ Course pas encore commencée. Démarrage dans ${Math.round(delay/60000)} min.`);
-    setTimeout(() => {
+function checkAndUpdateLoop() {
+  const now = getRaceTime();
+  const raceStartMs = RACE_START.getTime();
+  if (now < raceStartMs) return; // Course pas encore commencée
+
+  const currentLoop = getCurrentLoopNumber();
+
+  if (currentLoop !== lastLoopNumber) {
+    // Nouvelle heure détectée !
+    if (lastLoopNumber === -1) {
       console.log('\n🏁 DÉPART DE LA COURSE ! Boucle 1 lancée.');
-      startLoopForAllRunners();
-      scheduleNextHour();
-    }, delay);
-    return;
-  }
-
-  // Calculer le temps jusqu'à la prochaine heure pile
-  const elapsed = now - raceStartMs;
-  const msIntoLoop = elapsed % LOOP_DURATION_MS;
-  const msToNextLoop = LOOP_DURATION_MS - msIntoLoop;
-
-  setTimeout(() => {
-    const loop = Math.floor((getRaceTime() - raceStartMs) / LOOP_DURATION_MS) + 1;
-    console.log(`\n💀 Heure ${loop} — Élimination + nouveau départ...`);
-    const eliminated = db.eliminateLateRunners();
-    console.log(`   ${eliminated} coureur(s) éliminé(s).`);
+    } else {
+      console.log(`\n💀 Boucle ${currentLoop + 1} — Élimination + nouveau départ...`);
+      const eliminated = db.eliminateLateRunners();
+      console.log(`   ${eliminated} coureur(s) éliminé(s).`);
+    }
     startLoopForAllRunners();
-    scheduleNextHour();
-  }, msToNextLoop);
+    lastLoopNumber = currentLoop;
+  }
+}
 
-  console.log(`⏱  Prochaine heure dans ${Math.round(msToNextLoop/60000)} min`);
+// Vérification toutes les 10 secondes — robuste aux redémarrages Railway
+function startLoopChecker() {
+  // Init: calculer la boucle courante sans déclencher d'action
+  const now = getRaceTime();
+  const raceStartMs = RACE_START.getTime();
+  if (now >= raceStartMs) {
+    lastLoopNumber = getCurrentLoopNumber();
+    console.log(`⏱  Course en cours, boucle ${lastLoopNumber + 1} détectée au démarrage`);
+  }
+  setInterval(checkAndUpdateLoop, 10000);
+  console.log('✅ Vérificateur de boucle démarré (toutes les 10s)');
 }
 
 app.listen(PORT, () => {
   console.log('\n💀 La Carcasse — App démarrée !');
   console.log(`👉 App   : http://localhost:${PORT}`);
   console.log(`👉 Admin : http://localhost:${PORT}/admin\n`);
-  scheduleNextHour();
+  startLoopChecker();
 });

@@ -21,9 +21,9 @@
 <div id="onboarding" style="display:none">
   <div id="ob-splash" class="onboarding-page">
     <div class="splash-logo"><img src="skull.svg" alt="La Carcasse"></div>
-    <div class="splash-title">LA CARCASSE</div>
-    <div class="splash-sub">Backyard Ultra — 6km Loop</div>
-    <button class="splash-btn" onclick="goToModeSelect()">COMMENCER <span>→</span></button>
+    <div class="splash-title" style="text-align:center;width:100%">LA CARCASSE</div>
+    <div class="splash-sub" style="text-align:center;width:100%">Backyard Ultra — 6km Loop</div>
+    <button class="splash-btn" onclick="goToModeSelect()" style="justify-content:center;gap:12px">COMMENCER <span>→</span></button>
   </div>
   <div id="ob-mode" class="onboarding-page" style="display:none">
     <div class="ob-title">IMPORTANT</div>
@@ -65,6 +65,7 @@
         <div class="section-label" style="margin-top:16px;color:#7f1d1d">Abandons (DNF)</div>
         <div id="dnf-list"></div>
       </div>
+      <div id="mode-switch-coureurs" class="mode-switch" onclick="switchMode()" style="margin-top:8px;margin-bottom:8px"></div>
     </div>
 
     <div class="tab-panel" id="panel-classement">
@@ -180,7 +181,7 @@ function selectMode(mode){
 }
 function startApp(){
   document.getElementById('app').style.display='flex';
-  applyMode(); loadData(); renderProfil(); updateCountdown();
+  applyMode(); updateModeSwitchBtn(); loadData(); renderProfil(); updateCountdown();
   setInterval(updateCountdown,1000); setInterval(loadData,5000);
 }
 function applyMode(){
@@ -199,6 +200,8 @@ function switchMode(){
 function updateModeSwitchBtn(){
   const b=document.getElementById('mode-switch-btn');
   if(b) b.textContent=myMode==='runner'?'Passer en mode spectateur':'';
+  const bc=document.getElementById('mode-switch-coureurs');
+  if(bc) bc.textContent=myMode==='runner'?'Passer en mode spectateur':'Passer en mode coureur';
 }
 
 async function updateCountdown(){
@@ -207,22 +210,18 @@ async function updateCountdown(){
     const label=document.getElementById('countdown-label'), units=document.getElementById('countdown-units');
     if(data.status==='before'){
       const d=data.ms_to_start;
-      label.textContent='Départ dans'; label.style.color='#555';
+      label.textContent='DÉPART DANS'; label.style.color='#555'; label.style.textAlign='center';
       document.getElementById('cd-days').textContent=String(Math.floor(d/86400000)).padStart(2,'0');
       document.getElementById('cd-hours').textContent=String(Math.floor((d%86400000)/3600000)).padStart(2,'0');
       document.getElementById('cd-mins').textContent=String(Math.floor((d%3600000)/60000)).padStart(2,'0');
       document.getElementById('cd-secs').textContent=String(Math.floor((d%60000)/1000)).padStart(2,'0');
-    } else {
-      const d=data.ms_to_next_loop, mins=Math.floor(d/60000), secs=Math.floor((d%60000)/1000);
+    } else {      const d=data.ms_to_next_loop, mins=Math.floor(d/60000), secs=Math.floor((d%60000)/1000);
       const urgent=d<5*60*1000, sim=data.simulation?' 🎮':'';
-      document.getElementById('countdown-bar').style.borderColor=urgent?'#f87171':'#e0e0e0';
-      label.textContent=urgent?'⚠️ Prochain départ imminent !':'Boucle '+data.current_loop+' en cours'+sim;
-      label.style.color=urgent?'#f87171':'#555';
-      const c=urgent?'#f87171':'#111';
-      units.innerHTML=`<div class="cd-unit"><div class="cd-val" style="color:${c}">${String(mins).padStart(2,'0')}</div><div class="cd-lbl">Mins</div></div>
-        <div class="cd-sep" style="color:${c}">:</div>
-        <div class="cd-unit"><div class="cd-val" style="color:${c}">${String(secs).padStart(2,'0')}</div><div class="cd-lbl">Secs</div></div>
-        <div style="margin-left:8px;font-size:10px;color:#888;align-self:center;font-weight:600">avant le prochain départ</div>`;
+      document.getElementById('countdown-bar').style.borderColor='#e0e0e0';
+      const c=urgent?'#C80000':'#111', lc=urgent?'#C80000':'#555';
+      label.textContent='PROCHAIN DÉPART DANS'+sim;
+      label.style.color=lc; label.style.textAlign='center';
+      units.innerHTML=`<div style="display:flex;justify-content:center;align-items:flex-start;gap:4px;width:100%"><div class="cd-unit"><div class="cd-val" style="color:${c}">${String(mins).padStart(2,'0')}</div><div class="cd-lbl" style="color:${lc}">MINS</div></div><div class="cd-sep" style="color:${c}">:</div><div class="cd-unit"><div class="cd-val" style="color:${c}">${String(secs).padStart(2,'0')}</div><div class="cd-lbl" style="color:${lc}">SECS</div></div></div>`;
     }
   }catch(e){}
 }
@@ -541,13 +540,27 @@ async function openDetail(name){
     if(!r)return;
     const avg=loops.length?loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length:null;
     const ph=getPhoto(name,r.photo), bib=r.bib_number?`#${r.bib_number} `:'';
-    let html=`<div class="modal-allure-name"><div class="modal-allure-box"><div class="modal-allure-val">${pace(r.best_time)}</div><div class="modal-allure-lbl">Allure<br>Moyenne</div></div>
-      <div style="flex:1">${ph?`<img src="${ph}" style="width:100%;height:70px;object-fit:cover;object-position:center top;border-radius:8px;margin-bottom:6px">`:''}
-      <div class="modal-runner-name">${bib}${r.name}</div>${r.dnf?'<span class="dnf-badge" style="margin-top:4px;display:inline-block">DNF</span>':''}</div></div>
+    let html=`
+      <!-- Ligne 1 : Photo | Nom centré | Meilleure allure blanc -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="width:64px;height:64px;border-radius:8px;background:var(--card2);border:1px solid var(--border);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center">
+          ${ph?`<img src="${ph}" style="width:100%;height:100%;object-fit:cover;object-position:center top">`:' <i class="ti ti-user" style="font-size:28px;color:var(--muted)"></i>'}
+        </div>
+        <div style="flex:1;text-align:center">
+          <div class="modal-runner-name">${bib}${r.name}</div>
+          ${r.dnf?'<span class="dnf-badge" style="margin-top:4px;display:inline-block">DNF</span>':''}
+        </div>
+        <div style="width:64px;height:64px;border-radius:8px;background:#fff;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-family:var(--font-title);font-size:18px;color:#111;letter-spacing:1px">${pace(r.best_time)}</div>
+          <div style="font-size:7px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-top:2px">MEILLEURE</div>
+          <div style="font-size:7px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.06em">ALLURE</div>
+        </div>
+      </div>
+      <!-- 3 boxes : Boucles | Km | Allure Moyenne (bleu) -->
       <div class="stats-row" style="margin-bottom:12px">
         <div class="stat-box"><div class="val">${r.loops}</div><div class="lbl">Boucles</div></div>
         <div class="stat-box"><div class="val">${r.loops*LOOP_KM}</div><div class="lbl">Km Total</div></div>
-        <div class="stat-box"><div class="val" style="font-size:18px">${pace(r.best_time)}</div><div class="lbl">Meill. Allure</div></div>
+        <div class="stat-box"><div class="val" style="font-size:18px">${pace(avg||r.best_time)}</div><div class="lbl">Allure Moy.</div></div>
       </div>`;
     if(avg)html+=`<div class="avg-time-box" style="margin-bottom:12px"><div class="avg-time-label">Temps moyen</div><div class="avg-time-val">${fmtTime(Math.round(avg))}</div><div class="avg-time-sub">par boucle</div></div>`;
     if(loops.length){
