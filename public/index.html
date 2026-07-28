@@ -255,7 +255,7 @@ function runnerCard(r,isDnf=false){
   const st=stateInfo(r.state), km=Math.round(r.loops*LOOP_KM+(r.state==='waiting_end_start'?3:0));
   const bib=r.bib_number?`#${r.bib_number} `:'';
   const cs=(r.state==='waiting_end_start'&&r.loop_start_time&&r.loop_checkpoint_time)?Math.round((r.loop_checkpoint_time-r.loop_start_time)/1000):null;
-  return`<div class="runner-card${isDnf?' dnf-card':''}" onclick="openDetail('${r.name.replace(/'/g,"\\'")}')">
+  return`<div class="runner-card${isDnf?' dnf-card':''}" data-name="${r.name.replace(/"/g,'&quot;')}" onclick="openDetail(this.dataset.name)">
     <div class="r-avatar">${avatarEl(r.name,r.photo)}</div>
     <div class="r-main">
       <div class="r-name">${bib}${r.name}${isDnf?'<span class="dnf-badge">DNF</span>':''}</div>
@@ -580,7 +580,7 @@ async function handlePhoto(input){
     await loadData();renderProfil();
   };reader.readAsDataURL(file);
 }
-async function confirmDNF(){if(!confirm('⚠️ Confirmer l'abandon ?'))return;await fetch('/api/runners/'+encodeURIComponent(myName)+'/dnf',{method:'POST'});await loadData();renderProfil();}
+async function confirmDNF(){if(!confirm("⚠️ Confirmer l'abandon ?"))return;await fetch('/api/runners/'+encodeURIComponent(myName)+'/dnf',{method:'POST'});await loadData();renderProfil();}
 async function cancelDNF(){await fetch('/api/runners/'+encodeURIComponent(myName)+'/dnf',{method:'DELETE'});await loadData();renderProfil();}
 function logout(){myName=null;localStorage.removeItem('backyard_runner');renderProfil();}
 async function loadData(){try{const r=await(await fetch('/api/leaderboard')).json();renderCoureurs(r);renderClassement(r);}catch(e){}}
