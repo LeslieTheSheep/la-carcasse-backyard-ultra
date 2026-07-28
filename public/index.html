@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="La Carcasse">
@@ -10,58 +10,40 @@
   <title>La Carcasse — Backyard Ultra</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
 
-<!-- ============ ONBOARDING ============ -->
+<!-- ONBOARDING -->
 <div id="onboarding" style="display:none">
-
-  <!-- Splash -->
   <div id="ob-splash" class="onboarding-page">
     <div class="splash-logo"><img src="skull.svg" alt="La Carcasse"></div>
     <div class="splash-title">LA CARCASSE</div>
     <div class="splash-sub">Backyard Ultra — 6km Loop</div>
-    <button class="splash-btn" onclick="goToModeSelect()">
-      COMMENCER <span class="splash-btn-arrow">→</span>
-    </button>
+    <button class="splash-btn" onclick="goToModeSelect()">COMMENCER <span>→</span></button>
   </div>
-
-  <!-- Choix de mode -->
   <div id="ob-mode" class="onboarding-page" style="display:none">
     <div class="ob-title">IMPORTANT</div>
-    <div class="ob-message-plain">
-      Pour assurer le bon fonctionnement de l'application, merci de garder cet onglet ouvert dans votre navigateur.
-    </div>
+    <div class="ob-message-plain">Pour assurer le bon fonctionnement de l'application, merci de garder cet onglet ouvert dans votre navigateur.</div>
     <div class="ob-buttons">
-      <button class="ob-btn ob-btn-runner" onclick="selectMode('runner')">
-        <i class="ti ti-run"></i> SÉLECTIONNER COUREUR
-      </button>
-      <button class="ob-btn ob-btn-spectator" onclick="selectMode('spectator')">
-        <i class="ti ti-eye"></i> MODE SPECTATEUR
-      </button>
+      <button class="ob-btn ob-btn-runner" onclick="selectMode('runner')"><i class="ti ti-run"></i> SÉLECTIONNER COUREUR</button>
+      <button class="ob-btn ob-btn-spectator" onclick="selectMode('spectator')"><i class="ti ti-eye"></i> MODE SPECTATEUR</button>
     </div>
   </div>
-
 </div>
 
-<!-- ============ APP PRINCIPALE ============ -->
+<!-- APP -->
 <div id="app" style="display:none">
-
-  <!-- HEADER -->
   <header class="app-header">
-    <div class="header-logo"><img src="logo.png" alt="La Carcasse"></div>
-    <div class="header-text">
-      <h1>LA CARCASSE</h1>
-      <div class="sub">Backyard Ultra · 6km Loop</div>
-    </div>
+    <div class="header-logo"><img src="skull.svg" alt="La Carcasse"></div>
+    <div class="header-text"><h1>LA CARCASSE</h1><div class="sub">Backyard Ultra · 6km Loop</div></div>
     <div class="live-badge"><div class="live-dot"></div>Live</div>
+    <div class="spectator-mode-btn" id="spectator-mode-btn" onclick="switchMode()">👤 Passer en mode coureur</div>
   </header>
 
-  <!-- COMPTE À REBOURS -->
   <div class="countdown-bar" id="countdown-bar">
     <div class="countdown-label" id="countdown-label">Départ dans</div>
     <div class="countdown-units" id="countdown-units">
@@ -75,52 +57,43 @@
     </div>
   </div>
 
-  <!-- CONTENU -->
   <div class="tab-content">
-
-    <!-- COUREURS -->
     <div class="tab-panel active" id="panel-coureurs">
       <div class="section-label">Coureurs en course</div>
       <div id="coureurs-list"><div class="empty-state"><i class="ti ti-run"></i><p>Aucun coureur inscrit.</p></div></div>
       <div id="dnf-section" style="display:none">
-        <div class="section-label" style="color:#7f1d1d;margin-top:16px">Abandons (DNF)</div>
+        <div class="section-label" style="margin-top:16px;color:#7f1d1d">Abandons (DNF)</div>
         <div id="dnf-list"></div>
       </div>
     </div>
 
-    <!-- CLASSEMENT -->
     <div class="tab-panel" id="panel-classement">
       <div id="podium-wrap" class="podium-wrap"></div>
       <div class="section-label">Classement général</div>
       <div id="classement-list"></div>
     </div>
 
-    <!-- CARTE -->
     <div class="tab-panel" id="panel-carte">
       <div class="section-label">Carte du parcours</div>
       <div id="map"></div>
-      <div style="display:flex;align-items:center;gap:14px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;flex-wrap:wrap">
-        <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-right:4px">Légende</div>
-        <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--text)"><div style="width:10px;height:10px;border-radius:50%;background:#e8392a;flex-shrink:0"></div>START</div>
-        <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--text)"><div style="width:10px;height:10px;border-radius:50%;background:#60a5fa;flex-shrink:0"></div>CHECKPOINT</div>
-        <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--text)"><div style="width:20px;height:4px;background:#f97316;border-radius:2px;flex-shrink:0"></div>TRACÉ BOUCLE 6KM</div>
+      <div class="map-legend-line">
+        <span class="map-legend-label">Légende</span>
+        <div class="legend-item-inline"><div style="width:10px;height:10px;border-radius:50%;background:#e8392a;flex-shrink:0"></div>START</div>
+        <div class="legend-item-inline"><div style="width:10px;height:10px;border-radius:50%;background:#60a5fa;flex-shrink:0"></div>CHECKPOINT</div>
+        <div class="legend-item-inline"><div style="width:20px;height:4px;background:#f97316;border-radius:2px;flex-shrink:0"></div>TRACÉ</div>
       </div>
-      <a href="/trace.gpx" download="La_Carcasse_Backyard_Ultra.gpx" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;background:#fff;border:none;border-radius:8px;color:#111;text-decoration:none;font-family:var(--font-title);font-size:20px;letter-spacing:1.5px;margin-bottom:8px">
-        <i class="ti ti-download" style="color:#111;font-size:20px"></i> TÉLÉCHARGER LE TRACÉ GPX
+      <a href="/trace.gpx" download="La_Carcasse_Backyard_Ultra.gpx" class="gpx-btn">
+        <i class="ti ti-download"></i> TÉLÉCHARGER LE TRACÉ GPX
       </a>
       <div class="gpx-compat">Compatible Garmin, Coros, Suunto, Polar, Wahoo et toutes les montres GPS</div>
     </div>
 
-    <!-- PROFIL -->
     <div class="tab-panel" id="panel-profil">
-
-      <!-- Identification -->
       <div id="profil-identify" style="display:none">
         <div class="identify-wrap">
-          <div class="identify-title" style="text-align:center;width:100%">QUI EST TU ?</div>
-          <div class="identify-sub" style="text-align:center;width:100%">Sélectionne ton nom dans la liste des participants</div>
-          <div class="search-box">
-            <i class="ti ti-search"></i>
+          <div class="identify-title">QUI EST TU ?</div>
+          <div class="identify-sub">Sélectionne ton nom dans la liste des participants</div>
+          <div class="search-box"><i class="ti ti-search"></i>
             <input type="text" id="search-input" placeholder="Recherche ton nom..." oninput="filterParticipants(this.value)">
           </div>
           <div class="participant-list" id="participant-list"></div>
@@ -132,73 +105,52 @@
         </div>
       </div>
 
-      <!-- Profil connecté -->
       <div id="profil-main" style="display:none;padding-top:8px">
-        <!-- Photo carrée centrée -->
-        <div style="display:flex;justify-content:center;margin-bottom:14px;position:relative;width:fit-content;margin-left:auto;margin-right:auto">
-          <div id="profile-photo-el" onclick="document.getElementById('photo-input').click()" style="width:90px;height:90px;border-radius:12px;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer">
-            <i class="ti ti-photo" style="font-size:36px;color:var(--muted)"></i>
+        <div class="profile-photo-wrap">
+          <div class="profile-photo" id="profile-photo-el" onclick="document.getElementById('photo-input').click()">
+            <i class="ti ti-photo"></i>
           </div>
-          <div class="photo-edit" onclick="document.getElementById('photo-input').click()" style="position:absolute;bottom:-6px;right:-6px">
-            <i class="ti ti-camera"></i>
-          </div>
+          <div class="photo-edit" onclick="document.getElementById('photo-input').click()"><i class="ti ti-camera"></i> PHOTO</div>
           <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(this)">
         </div>
-
-        <div class="profile-bib-name" id="profile-bib-name" style="text-align:center">—</div>
-        <div class="profile-state-wrap" id="profile-state-el" style="text-align:center;margin-bottom:4px"></div>
-
+        <div class="profile-bib-name" id="profile-bib-name">—</div>
+        <div class="profile-state-wrap" id="profile-state-el"></div>
         <div class="stats-row" style="margin-top:14px">
           <div class="stat-box"><div class="val" id="pstat-loops">0</div><div class="lbl">Boucles</div></div>
-          <div class="stat-box"><div class="val" id="pstat-km">0.0</div><div class="lbl">Km Total</div></div>
-          <div class="stat-box"><div class="val" id="pstat-best">--</div><div class="lbl">Meilleure Allure</div></div>
+          <div class="stat-box"><div class="val" id="pstat-km">0</div><div class="lbl">Km Total</div></div>
+          <div class="stat-box"><div class="val" id="pstat-best">--</div><div class="lbl">Meill. Allure</div></div>
         </div>
-
         <div class="avg-time-box" id="avg-time-box" style="display:none">
           <div class="avg-time-label">Temps moyen</div>
           <div class="avg-time-val" id="avg-time-val">--</div>
           <div class="avg-time-sub">par boucle</div>
         </div>
-
-        <button class="btn btn-danger mb" onclick="confirmDNF()" id="dnf-btn" style="margin-top:4px">
+        <button class="btn btn-danger mb" id="dnf-btn" style="margin-top:4px" onclick="confirmDNF()">
           <i class="ti ti-flag-off"></i> ABANDONNER LA COURSE
         </button>
-
         <div class="change-runner" onclick="logout()">C'est pas toi ?</div>
         <div id="mode-switch-btn" class="mode-switch" onclick="switchMode()"></div>
-
         <div id="history-section" class="history-section" style="display:none">
           <div class="history-title">Détail des boucles</div>
           <div id="history-list"></div>
         </div>
       </div>
-
     </div>
   </div>
 
-  <!-- NAVIGATION -->
-  <nav class="bottom-nav" id="bottom-nav">
-    <button class="nav-btn active" onclick="switchTab('coureurs',this)">
-      <i class="ti ti-run"></i>Coureurs
-    </button>
-    <button class="nav-btn" onclick="switchTab('classement',this)">
-      <i class="ti ti-trophy"></i>Classement
-    </button>
-    <button class="nav-btn" onclick="switchTab('carte',this)">
-      <i class="ti ti-map-pin"></i>Carte
-    </button>
-    <button class="nav-btn" id="nav-profil-btn" onclick="switchTab('profil',this)">
-      <i class="ti ti-user"></i>Profil
-    </button>
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('coureurs',this)"><i class="ti ti-run"></i>Coureurs</button>
+    <button class="nav-btn" onclick="switchTab('classement',this)"><i class="ti ti-trophy"></i>Classement</button>
+    <button class="nav-btn" onclick="switchTab('carte',this)"><i class="ti ti-map-pin"></i>Carte</button>
+    <button class="nav-btn" id="nav-profil-btn" onclick="switchTab('profil',this)"><i class="ti ti-user"></i>Profil</button>
   </nav>
-
 </div>
 
-<!-- MODAL DÉTAIL COUREUR -->
+<!-- MODAL -->
 <div id="modal-overlay" onclick="closeModal(event)">
   <div class="modal-box">
     <div class="modal-header">
-      <div style="font-family:var(--font-title);font-size:20px;letter-spacing:1px">DÉTAIL</div>
+      <div style="font-family:var(--font-title);font-size:18px;letter-spacing:1px">DÉTAIL</div>
       <button class="modal-close" onclick="document.getElementById('modal-overlay').style.display='none'">✕</button>
     </div>
     <div id="modal-content"></div>
@@ -207,286 +159,145 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const LOOP_KM = 6.00;
-const RACE_START = new Date('2026-08-01T08:00:00+02:00');
-let myName = localStorage.getItem('backyard_runner') || null;
-let myMode = localStorage.getItem('backyard_mode') || null; // 'runner' | 'spectator'
-let allParticipants = [];
-let mapInit = false;
-let chronoRunners = [];
+const LOOP_KM=6.00, RACE_START=new Date('2026-08-01T08:00:00+02:00');
+let myName=localStorage.getItem('backyard_runner')||null;
+let myMode=localStorage.getItem('backyard_mode')||null;
+let allParticipants=[], mapInit=false;
 
-// ============ ONBOARDING ============
-function initApp() {
-  const onboarded = localStorage.getItem('backyard_onboarded');
-  if (!onboarded) {
-    document.getElementById('onboarding').style.display = 'block';
-    document.getElementById('app').style.display = 'none';
-  } else {
-    startApp();
+function initApp(){
+  if(!localStorage.getItem('backyard_onboarded')){
+    document.getElementById('onboarding').style.display='block';
+    document.getElementById('app').style.display='none';
+  } else startApp();
+}
+function goToModeSelect(){
+  document.getElementById('ob-splash').style.display='none';
+  document.getElementById('ob-mode').style.display='flex';
+}
+function selectMode(mode){
+  myMode=mode; localStorage.setItem('backyard_mode',mode); localStorage.setItem('backyard_onboarded','1');
+  document.getElementById('onboarding').style.display='none'; startApp();
+}
+function startApp(){
+  document.getElementById('app').style.display='flex';
+  applyMode(); loadData(); renderProfil(); updateCountdown();
+  setInterval(updateCountdown,1000); setInterval(loadData,5000);
+}
+function applyMode(){
+  const s=myMode==='spectator';
+  document.getElementById('nav-profil-btn').style.display=s?'none':'';
+  document.getElementById('spectator-mode-btn').style.display=s?'block':'none';
+}
+function switchMode(){
+  const newMode=myMode==='runner'?'spectator':'runner';
+  if(confirm('Passer en mode '+(newMode==='spectator'?'spectateur':'coureur')+' ?')){
+    myMode=newMode; localStorage.setItem('backyard_mode',newMode);
+    applyMode(); updateModeSwitchBtn();
+    if(newMode==='spectator') switchTab('coureurs',document.querySelector('.nav-btn'));
   }
 }
-
-function goToModeSelect() {
-  document.getElementById('ob-splash').style.display = 'none';
-  document.getElementById('ob-mode').style.display = 'flex';
+function updateModeSwitchBtn(){
+  const b=document.getElementById('mode-switch-btn');
+  if(b) b.textContent=myMode==='runner'?'Passer en mode spectateur':'';
 }
 
-function selectMode(mode) {
-  myMode = mode;
-  localStorage.setItem('backyard_mode', mode);
-  localStorage.setItem('backyard_onboarded', '1');
-  document.getElementById('onboarding').style.display = 'none';
-  startApp();
-}
-
-function startApp() {
-  document.getElementById('app').style.display = 'flex';
-  // Cacher onglet profil si spectateur
-  if (myMode === 'spectator') {
-    document.getElementById('nav-profil-btn').style.display = 'none';
-  }
-  loadData();
-  renderProfil();
-  updateCountdown();
-  setInterval(updateCountdown, 1000);
-  setInterval(loadData, 5000);
-  setInterval(() => {
-    chronoRunners.forEach(r => {
-      if (!r.loop_start_time || r.state === 'waiting_start' || r.dnf) return;
-      const elapsed = Math.floor((Date.now() - r.loop_start_time) / 1000);
-      const el = document.getElementById('ch_' + r.name.replace(/[^a-z0-9]/gi,'_'));
-      if (el) el.textContent = fmtTime(elapsed);
-    });
-  }, 1000);
-}
-
-// ============ SWITCH MODE ============
-function switchMode() {
-  const newMode = myMode === 'runner' ? 'spectator' : 'runner';
-  const label = newMode === 'spectator' ? 'spectateur' : 'coureur';
-  if (confirm(`Passer en mode ${label} ?`)) {
-    myMode = newMode;
-    localStorage.setItem('backyard_mode', newMode);
-    if (newMode === 'spectator') {
-      document.getElementById('nav-profil-btn').style.display = 'none';
+async function updateCountdown(){
+  try{
+    const data=await(await fetch('/api/race-status')).json();
+    const label=document.getElementById('countdown-label'), units=document.getElementById('countdown-units');
+    if(data.status==='before'){
+      const d=data.ms_to_start;
+      label.textContent='Départ dans'; label.style.color='#555';
+      document.getElementById('cd-days').textContent=String(Math.floor(d/86400000)).padStart(2,'0');
+      document.getElementById('cd-hours').textContent=String(Math.floor((d%86400000)/3600000)).padStart(2,'0');
+      document.getElementById('cd-mins').textContent=String(Math.floor((d%3600000)/60000)).padStart(2,'0');
+      document.getElementById('cd-secs').textContent=String(Math.floor((d%60000)/1000)).padStart(2,'0');
     } else {
-      document.getElementById('nav-profil-btn').style.display = '';
+      const d=data.ms_to_next_loop, mins=Math.floor(d/60000), secs=Math.floor((d%60000)/1000);
+      const urgent=d<5*60*1000, sim=data.simulation?' 🎮':'';
+      document.getElementById('countdown-bar').style.borderColor=urgent?'#f87171':'#e0e0e0';
+      label.textContent=urgent?'⚠️ Prochain départ imminent !':'Boucle '+data.current_loop+' en cours'+sim;
+      label.style.color=urgent?'#f87171':'#555';
+      const c=urgent?'#f87171':'#111';
+      units.innerHTML=`<div class="cd-unit"><div class="cd-val" style="color:${c}">${String(mins).padStart(2,'0')}</div><div class="cd-lbl">Mins</div></div>
+        <div class="cd-sep" style="color:${c}">:</div>
+        <div class="cd-unit"><div class="cd-val" style="color:${c}">${String(secs).padStart(2,'0')}</div><div class="cd-lbl">Secs</div></div>
+        <div style="margin-left:8px;font-size:10px;color:#888;align-self:center;font-weight:600">avant le prochain départ</div>`;
     }
-    updateModeSwitchBtn();
-  }
+  }catch(e){}
 }
 
-function updateModeSwitchBtn() {
-  const btn = document.getElementById('mode-switch-btn');
-  if (btn) btn.textContent = myMode === 'runner' ? 'Passer en mode spectateur' : 'Passer en mode coureur';
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active'); btn.classList.add('active');
+  if(tab==='profil') renderProfil();
+  if(tab==='carte'&&!mapInit) initMap();
 }
 
-// ============ COUNTDOWN ============
-async function updateCountdown() {
-  try {
-    const res = await fetch('/api/race-status');
-    const data = await res.json();
-    const bar = document.getElementById('countdown-bar');
-    const label = document.getElementById('countdown-label');
-    const units = document.getElementById('countdown-units');
+function fmtTime(s){if(!s&&s!==0)return'--';const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return h>0?`${h}H ${m}M ${sc}S`:m>0?`${m}M ${sc}S`:`${sc}S`}
+function fmtTimeSmall(s){if(!s&&s!==0)return'--';const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return h>0?`${h}h${m}m${sc}s`:m>0?`${m}m ${sc}s`:`${sc}s`}
+function pace(s){if(!s||s<=0)return'--';const t=s/60/LOOP_KM,m=Math.floor(t),sc=Math.round((t-m)*60);return`${m}'${String(sc).padStart(2,'0')}"`}
+function stateInfo(s){return{waiting_start:{label:'En attente',cls:'pill-go',icon:'ti-clock'},waiting_checkpoint:{label:'→ CHECKPOINT',cls:'pill-check',icon:'ti-route'},waiting_end_start:{label:'Retour → ARRIVÉE',cls:'pill-back',icon:'ti-flag-filled'}}[s]||{label:s,cls:'pill-go',icon:'ti-help'}}
+function getPhoto(n,sp){return sp||localStorage.getItem('photo_'+n)||null}
+function avatarEl(n,sp){const p=getPhoto(n,sp);return p?`<img src="${p}">`:'<i class="ti ti-user"></i>'}
 
-    if (data.status === 'before') {
-      const diff = data.ms_to_start;
-      const days  = Math.floor(diff/86400000);
-      const hours = Math.floor((diff%86400000)/3600000);
-      const mins  = Math.floor((diff%3600000)/60000);
-      const secs  = Math.floor((diff%60000)/1000);
-      label.textContent = 'Départ dans';
-      document.getElementById('cd-days').textContent  = String(days).padStart(2,'0');
-      document.getElementById('cd-hours').textContent = String(hours).padStart(2,'0');
-      document.getElementById('cd-mins').textContent  = String(mins).padStart(2,'0');
-      document.getElementById('cd-secs').textContent  = String(secs).padStart(2,'0');
-    } else {
-      const diff = data.ms_to_next_loop;
-      const mins = Math.floor(diff/60000);
-      const secs = Math.floor((diff%60000)/1000);
-      const isUrgent = diff < 5*60*1000;
-      bar.style.borderColor = isUrgent ? '#7f1d1d' : 'var(--border)';
-      const simBadge = data.simulation ? ' 🎮' : '';
-      label.textContent = isUrgent ? '⚠️ Prochain départ imminent !' : `Boucle ${data.current_loop} en cours${simBadge}`;
-      label.style.color = isUrgent ? '#f87171' : 'var(--muted)';
-      units.innerHTML = `
-        <div class="cd-unit"><div class="cd-val" style="color:${isUrgent?'#f87171':'#fff'}">${String(mins).padStart(2,'0')}</div><div class="cd-lbl">Mins</div></div>
-        <div class="cd-sep" style="color:${isUrgent?'#f87171':'var(--accent)'}">:</div>
-        <div class="cd-unit"><div class="cd-val" style="color:${isUrgent?'#f87171':'#fff'}">${String(secs).padStart(2,'0')}</div><div class="cd-lbl">Secs</div></div>
-        <div style="margin-left:10px;font-size:11px;color:var(--muted);align-self:center;font-weight:600">avant le prochain départ</div>`;
-    }
-  } catch(e) {}
+// COUREURS
+function renderCoureurs(runners){
+  const active=runners.filter(r=>!r.dnf), dnf=runners.filter(r=>r.dnf);
+  const el=document.getElementById('coureurs-list');
+  el.innerHTML=active.length?active.map(r=>runnerCard(r)).join(''):'<div class="empty-state"><i class="ti ti-run"></i><p>Aucun coureur inscrit.</p></div>';
+  const ds=document.getElementById('dnf-section');
+  if(dnf.length){ds.style.display='block';document.getElementById('dnf-list').innerHTML=dnf.map(r=>runnerCard(r,true)).join('');}
+  else ds.style.display='none';
 }
-
-// ============ NAVIGATION ============
-function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('panel-'+tab).classList.add('active');
-  btn.classList.add('active');
-  if (tab === 'profil') renderProfil();
-  if (tab === 'carte' && !mapInit) initMap();
-}
-
-// ============ HELPERS ============
-function fmtTime(s) {
-  if (!s && s !== 0) return '--';
-  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
-  if (h > 0) return `${h}H ${m}M ${sec}S`;
-  if (m > 0) return `${m}M ${sec}S`;
-  return `${sec}S`;
-}
-
-function fmtTimeSmall(s) {
-  if (!s && s !== 0) return '--';
-  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
-  if (h > 0) return `${h}h${m}m${sec}s`;
-  if (m > 0) return `${m}m ${sec}s`;
-  return `${sec}s`;
-}
-
-function pace(seconds) {
-  if (!seconds || seconds <= 0) return '--';
-  const totalMin = seconds / 60 / LOOP_KM;
-  const m = Math.floor(totalMin), s = Math.round((totalMin - m) * 60);
-  return `${m}'${String(s).padStart(2,'0')}"`;
-}
-
-function stateInfo(state) {
-  return {
-    waiting_start:      { label:'En attente',         cls:'pill-go',    icon:'ti-clock' },
-    waiting_checkpoint: { label:'En route → CHECK',   cls:'pill-check', icon:'ti-route' },
-    waiting_end_start:  { label:'Retour → ARRIVÉE',   cls:'pill-back',  icon:'ti-flag-filled' },
-  }[state] || { label: state, cls:'pill-go', icon:'ti-help' };
-}
-
-function getPhoto(name, serverPhoto) {
-  return serverPhoto || localStorage.getItem('photo_'+name) || null;
-}
-
-function avatarEl(name, serverPhoto) {
-  const p = getPhoto(name, serverPhoto);
-  return p ? `<img src="${p}">` : `<i class="ti ti-user"></i>`;
-}
-
-function partialKm(r) {
-  const base = r.loops * LOOP_KM;
-  if (r.state === 'waiting_end_start') return base + 3.0;
-  return base;
-}
-
-function chronoId(name) { return 'ch_' + name.replace(/[^a-z0-9]/gi,'_'); }
-
-// ============ COUREURS ============
-function renderCoureurs(runners) {
-  const active = runners.filter(r => !r.dnf);
-  const dnf    = runners.filter(r => r.dnf);
-
-  const el = document.getElementById('coureurs-list');
-  if (!active.length) {
-    el.innerHTML = '<div class="empty-state"><i class="ti ti-run"></i><p>Aucun coureur inscrit.</p></div>';
-  } else {
-    el.innerHTML = active.map(r => runnerCardHtml(r, false)).join('');
-  }
-
-  const dnfSec = document.getElementById('dnf-section');
-  if (dnf.length > 0) {
-    dnfSec.style.display = 'block';
-    document.getElementById('dnf-list').innerHTML = dnf.map(r => runnerCardHtml(r, true)).join('');
-  } else {
-    dnfSec.style.display = 'none';
-  }
-}
-
-function runnerCardHtml(r, isDnf) {
-  const st = stateInfo(r.state);
-  const km = partialKm(r);
-  const cid = chronoId(r.name);
-  const checkSplit = (r.state === 'waiting_end_start' && r.loop_start_time && r.loop_checkpoint_time)
-    ? Math.round((r.loop_checkpoint_time - r.loop_start_time) / 1000) : null;
-  const bib = r.bib_number ? `#${r.bib_number} ` : '';
-  return `
-  <div class="runner-card ${isDnf?'dnf-card':''}" onclick="openRunnerDetail('${r.name.replace(/'/g,"\\'")}')">
-    <div class="r-avatar">${avatarEl(r.name, r.photo)}</div>
+function runnerCard(r,isDnf=false){
+  const st=stateInfo(r.state), km=Math.round(r.loops*LOOP_KM+(r.state==='waiting_end_start'?3:0));
+  const bib=r.bib_number?`#${r.bib_number} `:'';
+  const cs=(r.state==='waiting_end_start'&&r.loop_start_time&&r.loop_checkpoint_time)?Math.round((r.loop_checkpoint_time-r.loop_start_time)/1000):null;
+  return`<div class="runner-card${isDnf?' dnf-card':''}" onclick="openDetail('${r.name.replace(/'/g,"\\'")}')">
+    <div class="r-avatar">${avatarEl(r.name,r.photo)}</div>
     <div class="r-main">
-      <div class="r-name">
-        <span>${bib}${r.name}</span>
-        ${isDnf?'<span class="dnf-badge">DNF</span>':''}
-      </div>
+      <div class="r-name">${bib}${r.name}${isDnf?'<span class="dnf-badge">DNF</span>':''}</div>
       ${!isDnf?`<div class="r-status"><span class="pill ${st.cls}"><i class="ti ${st.icon}"></i>${st.label}</span></div>`:''}
-      ${checkSplit!==null?`<div class="checkpoint-split"><i class="ti ti-flag-2"></i> Check : ${fmtTimeSmall(checkSplit)}</div>`:''}
+      ${cs!==null?`<div class="checkpoint-split"><i class="ti ti-flag-2" style="font-size:11px"></i> Checkpoint : ${fmtTimeSmall(cs)}</div>`:''}
     </div>
     <div class="r-right">
-      <div class="r-km">${km.toFixed(1)}</div>
-      <div class="r-km-lbl">Kilomètres</div>
-      <div class="r-loops">${r.loops}</div>
-      <div class="r-loops-lbl">Boucles</div>
+      <div class="r-stat"><div class="r-stat-val">${km}</div><div class="r-stat-lbl">KM</div></div>
+      <div class="r-stat"><div class="r-stat-val">${r.loops}</div><div class="r-stat-lbl">BOUCLES</div></div>
     </div>
   </div>`;
 }
 
-// ============ CLASSEMENT ============
-function renderClassement(runners) {
-  const sorted = [...runners].sort((a,b) => {
-    if (a.dnf !== b.dnf) return a.dnf - b.dnf;
-    if (b.loops !== a.loops) return b.loops - a.loops;
-    return (a.best_time||99999) - (b.best_time||99999);
-  });
-
-  const top3 = sorted.filter(r => !r.dnf).slice(0, 3);
-  const podiumOrder = top3.length >= 2 ? [top3[1], top3[0], top3[2]].filter(Boolean) : top3;
-  const podiumColors = ['#C0C0C0','#D4AF37','#CD7F32'];
-  const podiumTextColors = ['#444','#4a2e00','#3a1800'];
-  const podiumClasses = ['p2','p1','p3'];
-
-  const podiumEl = document.getElementById('podium-wrap');
-  if (top3.length > 0) {
-    podiumEl.innerHTML = podiumOrder.map((r, i) => {
-      const parts = r.name.split(' ');
-      return `
-      <div class="podium-item">
-        <div class="podium-name">${parts[0]}<br>${parts.slice(1).join(' ')}</div>
-        <div class="podium-bar ${podiumClasses[i]}" style="background:${podiumColors[i]}">
-        </div>
-      </div>`;
-    }).join('');
-  } else { podiumEl.innerHTML = ''; }
-
-  const el = document.getElementById('classement-list');
-  if (!sorted.length) {
-    el.innerHTML = '<div class="empty-state"><i class="ti ti-trophy"></i><p>Aucun coureur.</p></div>';
-    return;
-  }
-  const podiumNumColors = ['#D4AF37','#C0C0C0','#CD7F32'];
-  let rank = 0;
-  el.innerHTML = sorted.map(r => {
-    if (!r.dnf) rank++;
-    const numColor = r.dnf ? 'var(--muted)' : rank<=3 ? podiumNumColors[rank-1] : 'var(--muted)';
-    const kmInt = r.loops * LOOP_KM;
-    return `
-    <div class="rank-card ${r.dnf?'dnf-card':''}" onclick="openRunnerDetail('${r.name.replace(/'/g,"\\'")}')">
-      <div class="rank-num" style="color:${numColor}">${r.dnf?'DNF':rank}</div>
-      <div class="rank-av">${avatarEl(r.name, r.photo)}</div>
-      <div class="rank-info"><div class="rank-name">${r.name}</div></div>
-      <div style="display:flex;align-items:center;gap:14px;flex-shrink:0">
-        <div style="text-align:center">
-          <div style="font-family:var(--font-title);font-size:16px;color:#fff;letter-spacing:.5px">${kmInt}</div>
-          <div style="font-size:8px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em">km</div>
-        </div>
-        <div style="text-align:center">
-          <div style="font-family:var(--font-title);font-size:16px;color:#fff;letter-spacing:.5px">${r.loops}</div>
-          <div style="font-size:8px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em">boucles</div>
-        </div>
+// CLASSEMENT
+function renderClassement(runners){
+  const sorted=[...runners].sort((a,b)=>a.dnf!==b.dnf?a.dnf-b.dnf:b.loops!==a.loops?b.loops-a.loops:(a.best_time||99999)-(b.best_time||99999));
+  const top3=sorted.filter(r=>!r.dnf).slice(0,3);
+  const pOrd=top3.length>=2?[top3[1],top3[0],top3[2]].filter(Boolean):top3;
+  const pCol=['#C0C0C0','#D4AF37','#CD7F32'], pCls=['p2','p1','p3'];
+  const pe=document.getElementById('podium-wrap');
+  pe.innerHTML=top3.length?pOrd.map((r,i)=>{const p=r.name.split(' ');return`<div class="podium-item"><div class="podium-name">${p[0]}<br>${p.slice(1).join(' ')}</div><div class="podium-bar ${pCls[i]}" style="background:${pCol[i]}"></div></div>`;}).join(''):'';
+  const el=document.getElementById('classement-list');
+  if(!sorted.length){el.innerHTML='<div class="empty-state"><i class="ti ti-trophy"></i><p>Aucun coureur.</p></div>';return;}
+  const nc=['#D4AF37','#C0C0C0','#CD7F32']; let rank=0;
+  el.innerHTML=sorted.map(r=>{
+    if(!r.dnf)rank++;
+    const nc2=r.dnf?'var(--muted)':rank<=3?nc[rank-1]:'var(--muted)';
+    return`<div class="rank-card${r.dnf?' dnf-card':''}" onclick="openDetail('${r.name.replace(/'/g,"\\'")}')">
+      <div class="rank-num" style="color:${nc2}">${r.dnf?'DNF':rank}</div>
+      <div class="rank-av">${avatarEl(r.name,r.photo)}</div>
+      <div class="rank-name">${r.name}</div>
+      <div class="r-right">
+        <div class="r-stat"><div class="r-stat-val">${r.loops*LOOP_KM}</div><div class="r-stat-lbl">KM</div></div>
+        <div class="r-stat"><div class="r-stat-val">${r.loops}</div><div class="r-stat-lbl">BOUCLES</div></div>
       </div>
     </div>`;
   }).join('');
 }
 
-
-// ============ CARTE ============
-function initMap() {
-  mapInit = true;
+// CARTE
+function initMap(){
+  mapInit=true;
   const GPX_TRACK = [
   [47.339949,4.962243],
   [47.339988,4.962754],
@@ -673,264 +484,107 @@ function initMap() {
   [47.339988,4.962754],
   [47.339949,4.962243],
 ];
-  const GPX_ARROWS = [[47.338765, 4.973426, 175.1], [47.333216, 4.982989, 97.9], [47.329262, 4.987556, 137.2], [47.332439, 4.980105, -63.8]];
-
-  const map = L.map('map', { zoomControl: true }).setView([47.334786, 4.977858], 13);
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles © Esri'
-  }).addTo(map);
-
-  const poly = L.polyline(GPX_TRACK, { color: '#f97316', weight: 5, opacity: .95 }).addTo(map);
-  map.fitBounds(poly.getBounds(), { padding: [20,20] });
-
-  // Flèches directionnelles
-  GPX_ARROWS.forEach(([lat, lon, angle]) => {
-    const arrowIcon = L.divIcon({
-      className: '',
-      html: `<div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:16px solid #f97316;transform:rotate(${angle-90}deg);filter:drop-shadow(0 0 3px rgba(0,0,0,.5))"></div>`,
-      iconSize: [16,16], iconAnchor: [8,8]
-    });
-    L.marker([lat, lon], { icon: arrowIcon }).addTo(map);
-  });
-
-  const mkS = L.divIcon({ className:'', html:'<div style="background:#e8392a;width:20px;height:20px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(232,57,42,.9);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff">S</div>', iconSize:[20,20], iconAnchor:[10,10] });
-  L.marker([47.339949,4.962243], { icon: mkS }).addTo(map).bindPopup('<b>START / Arrivée</b>');
-  const mkC = L.divIcon({ className:'', html:'<div style="background:#60a5fa;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(96,165,250,.9);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff">C</div>', iconSize:[18,18], iconAnchor:[9,9] });
-  L.marker([47.330372,4.988205], { icon: mkC }).addTo(map).bindPopup('<b>Checkpoint</b>');
+  const map=L.map('map',{zoomControl:true}).setView([47.334786,4.977858],13);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles © Esri'}).addTo(map);
+  const poly=L.polyline(GPX_TRACK,{color:'#f97316',weight:5,opacity:.95}).addTo(map);
+  map.fitBounds(poly.getBounds(),{padding:[20,20]});
+  const mkS=L.divIcon({className:'',html:'<div style="background:#e8392a;width:20px;height:20px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(232,57,42,.9);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff">S</div>',iconSize:[20,20],iconAnchor:[10,10]});
+  L.marker([47.339949,4.962243],{icon:mkS}).addTo(map).bindPopup('<b>START / Arrivée</b>');
+  const mkC=L.divIcon({className:'',html:'<div style="background:#60a5fa;width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 12px rgba(96,165,250,.9);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff">C</div>',iconSize:[18,18],iconAnchor:[9,9]});
+  L.marker([47.330372,4.988205],{icon:mkC}).addTo(map).bindPopup('<b>Checkpoint</b>');
 }
 
-
-// ============ PROFIL ============
-async function renderProfil() {
-  if (myMode === 'spectator') return;
-  if (!myName) {
-    document.getElementById('profil-identify').style.display = 'block';
-    document.getElementById('profil-main').style.display = 'none';
-    loadParticipants();
-    return;
-  }
-  document.getElementById('profil-identify').style.display = 'none';
-  document.getElementById('profil-main').style.display = 'block';
-  document.getElementById('history-section').style.display = 'none';
-  document.getElementById('history-list').innerHTML = '';
-  document.getElementById('avg-time-box').style.display = 'none';
-
-  try {
-    const [lbRes, loopRes] = await Promise.all([
-      fetch('/api/leaderboard'),
-      fetch('/api/runner/'+encodeURIComponent(myName)+'/loops')
-    ]);
-    const runners = await lbRes.json();
-    const loops = await loopRes.json();
-    const me = runners.find(r => r.name === myName);
-
-    if (me) {
-      const bib = me.bib_number ? `#${me.bib_number} ` : '';
-      document.getElementById('profile-bib-name').textContent = bib + me.name;
-      document.getElementById('pstat-loops').textContent = me.loops;
-      document.getElementById('pstat-km').textContent = (me.loops * LOOP_KM).toFixed(1);
-      document.getElementById('pstat-best').textContent = pace(me.best_time);
-
-      const st = stateInfo(me.state);
-      document.getElementById('profile-state-el').innerHTML =
-        me.dnf ? '<span class="pill" style="background:#2d1515;color:#f87171"><i class="ti ti-flag-off"></i> Abandon enregistré (DNF)</span>'
-                : `<span class="pill ${st.cls}"><i class="ti ${st.icon}"></i>${st.label}</span>`;
-
-      const dnfBtn = document.getElementById('dnf-btn');
-      if (me.dnf) {
-        dnfBtn.innerHTML = '<i class="ti ti-refresh"></i> REPRENDRE LA COURSE';
-        dnfBtn.onclick = cancelDNF;
-        dnfBtn.className = 'btn btn-green mb';
-      } else {
-        dnfBtn.innerHTML = '<i class="ti ti-flag-off"></i> ABANDONNER LA COURSE';
-        dnfBtn.onclick = confirmDNF;
-        dnfBtn.className = 'btn btn-danger mb';
-      }
-
-      const photo = getPhoto(myName, me.photo);
-      document.getElementById('profile-photo-el').innerHTML = photo ? `<img src="${photo}">` : `<i class="ti ti-photo"></i>`;
-
-      if (loops.length > 0) {
-        const avg = loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length;
-        document.getElementById('avg-time-box').style.display = 'block';
-        document.getElementById('avg-time-val').textContent = fmtTime(Math.round(avg));
-
-        document.getElementById('history-section').style.display = 'block';
-        document.getElementById('history-list').innerHTML = loops.slice().reverse().map((l, i) => {
-          const num = loops.length - i;
-          const isBest = l.duration_seconds === me.best_time;
-          return `
-          <div class="history-item">
-            <div class="history-num ${isBest?'best':''}">#${num}</div>
-            <div style="flex:1">
-              <div class="history-time">${fmtTimeSmall(l.duration_seconds)}</div>
-              <div class="history-date">${new Date(l.end_time).toLocaleString('fr-FR')}</div>
-            </div>
-            <div class="history-pace">${pace(l.duration_seconds)}<span>min/km</span></div>
-          </div>`;
+// PROFIL
+async function renderProfil(){
+  if(myMode==='spectator')return;
+  if(!myName){document.getElementById('profil-identify').style.display='block';document.getElementById('profil-main').style.display='none';loadParticipants();return;}
+  document.getElementById('profil-identify').style.display='none';document.getElementById('profil-main').style.display='block';
+  document.getElementById('history-section').style.display='none';document.getElementById('avg-time-box').style.display='none';
+  try{
+    const[lb,lr]=await Promise.all([fetch('/api/leaderboard'),fetch('/api/runner/'+encodeURIComponent(myName)+'/loops')]);
+    const runners=await lb.json(), loops=await lr.json(), me=runners.find(r=>r.name===myName);
+    if(me){
+      const bib=me.bib_number?`#${me.bib_number} `:'';
+      document.getElementById('profile-bib-name').textContent=bib+me.name;
+      document.getElementById('pstat-loops').textContent=me.loops;
+      document.getElementById('pstat-km').textContent=me.loops*LOOP_KM;
+      document.getElementById('pstat-best').textContent=pace(me.best_time);
+      const st=stateInfo(me.state);
+      document.getElementById('profile-state-el').innerHTML=me.dnf?'<span class="pill" style="background:#2d1515;color:#f87171"><i class="ti ti-flag-off"></i> Abandon (DNF)</span>':`<span class="pill ${st.cls}"><i class="ti ${st.icon}"></i>${st.label}</span>`;
+      const db=document.getElementById('dnf-btn');
+      if(me.dnf){db.innerHTML='<i class="ti ti-refresh"></i> REPRENDRE LA COURSE';db.onclick=cancelDNF;db.className='btn btn-green mb';}
+      else{db.innerHTML='<i class="ti ti-flag-off"></i> ABANDONNER LA COURSE';db.onclick=confirmDNF;db.className='btn btn-danger mb';}
+      const ph=getPhoto(myName,me.photo);
+      document.getElementById('profile-photo-el').innerHTML=ph?`<img src="${ph}">`:'<i class="ti ti-photo"></i>';
+      if(loops.length){
+        const avg=loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length;
+        document.getElementById('avg-time-box').style.display='block';
+        document.getElementById('avg-time-val').textContent=fmtTime(Math.round(avg));
+        document.getElementById('history-section').style.display='block';
+        document.getElementById('history-list').innerHTML=loops.slice().reverse().map((l,i)=>{
+          const num=loops.length-i, best=l.duration_seconds===me.best_time;
+          return`<div class="history-item"><div class="history-num" style="${best?'background:var(--accent);color:#fff':''}">#${num}</div><div style="flex:1"><div class="history-time">${fmtTimeSmall(l.duration_seconds)}</div><div class="history-date">${new Date(l.end_time).toLocaleString('fr-FR')}</div></div><div class="history-pace">${pace(l.duration_seconds)}<span>min/km</span></div></div>`;
         }).join('');
       }
     }
-  } catch(e) { console.error(e); }
+  }catch(e){console.error(e);}
   updateModeSwitchBtn();
 }
 
-// ============ MODAL DÉTAIL ============
-async function openRunnerDetail(name) {
-  document.getElementById('modal-overlay').style.display = 'block';
-  document.getElementById('modal-content').innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted)"><i class="ti ti-loader-2" style="font-size:32px;animation:spin 1s linear infinite"></i></div>';
-
-  try {
-    const [lbRes, loopRes] = await Promise.all([
-      fetch('/api/leaderboard'),
-      fetch('/api/runner/'+encodeURIComponent(name)+'/loops')
-    ]);
-    const runners = await lbRes.json();
-    const loops = await loopRes.json();
-    const runner = runners.find(r => r.name === name);
-    if (!runner) return;
-
-    const avgPaceSec = loops.length ? loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length : null;
-    const photo = getPhoto(name, runner.photo);
-    const bib = runner.bib_number ? `#${runner.bib_number} ` : '';
-
-    let html = `
-      <div class="modal-allure-name">
-        <div class="modal-allure-box">
-          <div class="modal-allure-val">${pace(runner.best_time)}</div>
-          <div class="modal-allure-lbl">Allure<br>Moyenne</div>
-        </div>
-        <div class="modal-name-block">
-          ${photo?`<img src="${photo}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:8px">`:''}
-          <div class="modal-runner-name">${bib}${runner.name}</div>
-          ${runner.dnf?'<span class="dnf-badge" style="margin-top:4px;display:inline-block">DNF</span>':''}
-        </div>
-      </div>
+// MODAL
+async function openDetail(name){
+  document.getElementById('modal-overlay').style.display='block';
+  document.getElementById('modal-content').innerHTML='<div style="text-align:center;padding:24px;color:var(--muted)"><i class="ti ti-loader-2" style="font-size:32px;animation:spin 1s linear infinite"></i></div>';
+  try{
+    const[lb,lr]=await Promise.all([fetch('/api/leaderboard'),fetch('/api/runner/'+encodeURIComponent(name)+'/loops')]);
+    const runners=await lb.json(), loops=await lr.json(), r=runners.find(x=>x.name===name);
+    if(!r)return;
+    const avg=loops.length?loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length:null;
+    const ph=getPhoto(name,r.photo), bib=r.bib_number?`#${r.bib_number} `:'';
+    let html=`<div class="modal-allure-name"><div class="modal-allure-box"><div class="modal-allure-val">${pace(r.best_time)}</div><div class="modal-allure-lbl">Allure<br>Moyenne</div></div>
+      <div style="flex:1">${ph?`<img src="${ph}" style="width:100%;height:70px;object-fit:cover;object-position:center top;border-radius:8px;margin-bottom:6px">`:''}
+      <div class="modal-runner-name">${bib}${r.name}</div>${r.dnf?'<span class="dnf-badge" style="margin-top:4px;display:inline-block">DNF</span>':''}</div></div>
       <div class="stats-row" style="margin-bottom:12px">
-        <div class="stat-box"><div class="val">${runner.loops}</div><div class="lbl">Boucles</div></div>
-        <div class="stat-box"><div class="val">${(runner.loops*LOOP_KM).toFixed(1)}</div><div class="lbl">Km Total</div></div>
-        <div class="stat-box"><div class="val" style="font-size:18px">${pace(runner.best_time)}</div><div class="lbl">Meilleure Allure</div></div>
+        <div class="stat-box"><div class="val">${r.loops}</div><div class="lbl">Boucles</div></div>
+        <div class="stat-box"><div class="val">${r.loops*LOOP_KM}</div><div class="lbl">Km Total</div></div>
+        <div class="stat-box"><div class="val" style="font-size:18px">${pace(r.best_time)}</div><div class="lbl">Meill. Allure</div></div>
       </div>`;
-
-    if (avgPaceSec) {
-      html += `
-      <div class="avg-time-box" style="margin-bottom:12px">
-        <div class="avg-time-label">Temps moyen</div>
-        <div class="avg-time-val">${fmtTime(Math.round(avgPaceSec))}</div>
-        <div class="avg-time-sub">par boucle</div>
-      </div>`;
-    }
-
-    if (loops.length > 0) {
-      html += `<div class="history-title">Détail des boucles</div>`;
-      html += loops.map((l, i) => {
-        const isBest = l.duration_seconds === runner.best_time;
-        return `
-        <div class="history-item">
-          <div class="history-num ${isBest?'best':''}">#${i+1}</div>
-          <div style="flex:1">
-            <div class="history-time">${fmtTimeSmall(l.duration_seconds)}</div>
-            <div class="history-date">${new Date(l.end_time).toLocaleString('fr-FR')}</div>
-          </div>
-          <div class="history-pace">${pace(l.duration_seconds)}<span>min/km</span></div>
-        </div>`;
-      }).join('');
-    } else {
-      html += '<div class="empty-state" style="padding:20px"><p>Aucune boucle complétée.</p></div>';
-    }
-
-    document.getElementById('modal-content').innerHTML = html;
-  } catch(e) { console.error(e); }
+    if(avg)html+=`<div class="avg-time-box" style="margin-bottom:12px"><div class="avg-time-label">Temps moyen</div><div class="avg-time-val">${fmtTime(Math.round(avg))}</div><div class="avg-time-sub">par boucle</div></div>`;
+    if(loops.length){
+      html+='<div class="history-title">Détail des boucles</div>';
+      html+=loops.map((l,i)=>{const best=l.duration_seconds===r.best_time;return`<div class="history-item"><div class="history-num" style="${best?'background:var(--accent);color:#fff':''}">#${i+1}</div><div style="flex:1"><div class="history-time">${fmtTimeSmall(l.duration_seconds)}</div><div class="history-date">${new Date(l.end_time).toLocaleString('fr-FR')}</div></div><div class="history-pace">${pace(l.duration_seconds)}<span>min/km</span></div></div>`;}).join('');
+    }else html+='<div class="empty-state" style="padding:20px"><p>Aucune boucle.</p></div>';
+    document.getElementById('modal-content').innerHTML=html;
+  }catch(e){console.error(e);}
 }
+function closeModal(e){if(e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').style.display='none';}
 
-function closeModal(e) {
-  if (e.target === document.getElementById('modal-overlay'))
-    document.getElementById('modal-overlay').style.display = 'none';
+// PARTICIPANTS
+async function loadParticipants(){try{allParticipants=await(await fetch('/api/participants')).json();filterParticipants('');}catch(e){}}
+function filterParticipants(q){
+  const f=allParticipants.filter(p=>p.name.toLowerCase().includes(q.toLowerCase()));
+  const el=document.getElementById('participant-list');
+  if(!f.length){el.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:14px">Aucun résultat</div>';return;}
+  el.innerHTML=f.map(p=>`<div class="participant-item" onclick="selectParticipant('${p.name.replace(/'/g,"\'")}')"><div class="p-avatar">${avatarEl(p.name,null)}</div><div class="p-name">${p.bib_number?`#${p.bib_number} `:''}${p.name}</div></div>`).join('');
 }
+function selectParticipant(n){myName=n;localStorage.setItem('backyard_runner',n);renderProfil();loadData();}
+function showManual(){document.getElementById('manual-form').style.display='block';}
+function doManualIdentify(){const n=document.getElementById('manual-input').value.trim();if(n)selectParticipant(n);}
 
-// ============ PARTICIPANTS ============
-async function loadParticipants() {
-  try {
-    const res = await fetch('/api/participants');
-    allParticipants = await res.json();
-    filterParticipants('');
-  } catch(e) {}
+async function handlePhoto(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    const d=e.target.result;localStorage.setItem('photo_'+myName,d);
+    try{await fetch('/api/runners/'+encodeURIComponent(myName)+'/photo',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({photo:d})});}catch(e){}
+    await loadData();renderProfil();
+  };reader.readAsDataURL(file);
 }
+async function confirmDNF(){if(!confirm('⚠️ Confirmer l'abandon ?'))return;await fetch('/api/runners/'+encodeURIComponent(myName)+'/dnf',{method:'POST'});await loadData();renderProfil();}
+async function cancelDNF(){await fetch('/api/runners/'+encodeURIComponent(myName)+'/dnf',{method:'DELETE'});await loadData();renderProfil();}
+function logout(){myName=null;localStorage.removeItem('backyard_runner');renderProfil();}
+async function loadData(){try{const r=await(await fetch('/api/leaderboard')).json();renderCoureurs(r);renderClassement(r);}catch(e){}}
 
-function filterParticipants(q) {
-  const filtered = allParticipants.filter(p => p.name.toLowerCase().includes(q.toLowerCase()));
-  const el = document.getElementById('participant-list');
-  if (!filtered.length) {
-    el.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:14px">Aucun résultat</div>`;
-    return;
-  }
-  el.innerHTML = filtered.map(p => `
-    <div class="participant-item" onclick="selectParticipant('${p.name.replace(/'/g,"\\'")}')">
-      <div class="p-avatar">${avatarEl(p.name, null)}</div>
-      <div class="p-name">${p.bib_number?`#${p.bib_number} `:''} ${p.name}</div>
-    </div>`).join('');
-}
-
-function selectParticipant(name) {
-  myName = name;
-  localStorage.setItem('backyard_runner', name);
-  renderProfil();
-  loadData();
-}
-
-function showManual() { document.getElementById('manual-form').style.display = 'block'; }
-function doManualIdentify() {
-  const n = document.getElementById('manual-input').value.trim();
-  if (n) selectParticipant(n);
-}
-
-// ============ ACTIONS PROFIL ============
-async function handlePhoto(input) {
-  const file = input.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async e => {
-    const photoData = e.target.result;
-    localStorage.setItem('photo_'+myName, photoData);
-    try {
-      await fetch('/api/runners/'+encodeURIComponent(myName)+'/photo', {
-        method:'PUT', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ photo: photoData })
-      });
-    } catch(e) {}
-    await loadData(); renderProfil();
-  };
-  reader.readAsDataURL(file);
-}
-
-async function confirmDNF() {
-  if (!confirm('⚠️ Confirmer l\'abandon ? Tu pourras reprendre si c\'était une erreur.')) return;
-  await fetch('/api/runners/'+encodeURIComponent(myName)+'/dnf', { method:'POST' });
-  await loadData(); renderProfil();
-}
-
-async function cancelDNF() {
-  await fetch('/api/runners/'+encodeURIComponent(myName)+'/dnf', { method:'DELETE' });
-  await loadData(); renderProfil();
-}
-
-function logout() {
-  myName = null;
-  localStorage.removeItem('backyard_runner');
-  renderProfil();
-}
-
-// ============ CHARGEMENT ============
-async function loadData() {
-  try {
-    const res = await fetch('/api/leaderboard');
-    const runners = await res.json();
-    chronoRunners = runners;
-    renderCoureurs(runners);
-    renderClassement(runners);
-  } catch(e) {}
-}
-
-// ============ INIT ============
 initApp();
 </script>
 </body>
