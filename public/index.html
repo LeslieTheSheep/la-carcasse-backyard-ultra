@@ -571,7 +571,10 @@ async function openDetail(name){
           ${r.dnf?'<span class="dnf-badge" style="margin-top:4px;display:inline-block">DNF</span>':''}
         </div>
         <div style="width:64px;height:64px;border-radius:8px;background:var(--card2);border:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer" title="Carte coureur (bientôt)">
-          <img src="/icone-carte.svg" style="width:36px;height:36px;filter:brightness(0) invert(1);opacity:0.5">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="3" width="16" height="18" rx="2"/>
+            <polygon points="12,7 13.5,10.5 17,10.5 14.5,12.7 15.5,16 12,13.8 8.5,16 9.5,12.7 7,10.5 10.5,10.5"/>
+          </svg>
         </div>
       </div>
       <!-- 3 boxes bleues : Boucles | KM Total | Allure Moyenne -->
@@ -592,7 +595,7 @@ async function openDetail(name){
           <div style="font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px">par boucle</div>
         </div>
       </div>`;
-    if(avg)html+=`<div class="avg-time-box" style="margin-bottom:12px"><div class="avg-time-label">Temps moyen</div><div class="avg-time-val">${fmtTime(Math.round(avg))}</div><div class="avg-time-sub">par boucle</div></div>`;
+    
     if(loops.length){
       html+='<div class="history-title">Détail des boucles</div>';
       html+=loops.map((l,i)=>`
