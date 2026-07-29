@@ -526,7 +526,7 @@ async function renderProfil(){
       if(me.dnf){db.innerHTML='<i class="ti ti-refresh"></i> REPRENDRE LA COURSE';db.onclick=cancelDNF;db.className='btn btn-green mb';}
       else{db.innerHTML='<i class="ti ti-flag-off"></i> ABANDONNER LA COURSE';db.onclick=confirmDNF;db.className='btn btn-danger mb';}
       const ph=getPhoto(myName,me.photo);
-      document.getElementById('profile-photo-el').innerHTML=ph?`<img src="${ph}">`:'<i class="ti ti-photo"></i>';
+      document.getElementById('profile-photo-el').innerHTML=ph?`<img src="${ph}" style="width:100%;height:100%;object-fit:contain">`:'<i class="ti ti-photo" style="font-size:56px;color:var(--muted)"></i>';
       if(loops.length){
         const avg=loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length;
         document.getElementById('avg-time-box').style.display='grid';
