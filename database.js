@@ -38,6 +38,29 @@ db.exec(`
   try { db.exec(`ALTER TABLE loops ADD COLUMN ${col}`); } catch(e) {}
 });
 
+// ===== COUREURS PERMANENTS =====
+const PERMANENT_RUNNERS = [
+  { bib: 1, name: 'Mael Carion' },
+  { bib: 2, name: 'Hugo Perez' },
+  { bib: 3, name: 'Guillaume Lyet' },
+  { bib: 4, name: 'Antoine Lyet' },
+  { bib: 5, name: 'Alex Leslie' },
+  { bib: 6, name: 'Romain Alcon' },
+  { bib: 7, name: 'Gauthier Petit' },
+  { bib: 8, name: 'Marie Monnier' },
+  { bib: 9, name: 'Lucas Lanaud' },
+];
+
+// Insérer les coureurs permanents s'ils n'existent pas déjà
+const insertRunner = db.prepare(`
+  INSERT OR IGNORE INTO runners (name, bib_number, state)
+  VALUES (?, ?, 'waiting_start')
+`);
+const seedRunners = db.transaction(() => {
+  PERMANENT_RUNNERS.forEach(r => insertRunner.run(r.name, r.bib));
+});
+seedRunners();
+
 function getOrCreateRunner(name) {
   const existing = db.prepare('SELECT * FROM runners WHERE name = ?').get(name);
   if (existing) return existing;
