@@ -30,6 +30,9 @@
     <button class="admin-btn admin-btn-accent" onclick="importParticipants()">
       <i class="ti ti-upload"></i> Importer la liste
     </button>
+    <button class="admin-btn admin-btn-ghost" onclick="saveParticipants()" style="margin-top:4px">
+      <i class="ti ti-device-floppy"></i> Sauvegarder (survit aux redéploiements)
+    </button>
     <div id="import-result" style="display:none;padding:10px;border-radius:8px;font-size:14px;font-weight:600;margin-top:8px;text-align:center"></div>
   </div>
 
@@ -159,6 +162,13 @@ async function stopSimulation() {
   el.style.background = '#1a1a2e'; el.style.color = '#a78bfa'; el.style.borderColor = '#4c1d95';
   document.getElementById('btn-sim-start').style.display = 'flex';
   document.getElementById('btn-sim-stop').style.display = 'none';
+}
+
+async function saveParticipants() {
+  const res = await fetch('/api/admin/export-participants', { method: 'POST' });
+  const data = await res.json();
+  if (data.ok) alert(`✅ ${data.count} participant(s) sauvegardés ! Ils seront restaurés automatiquement après chaque redéploiement.`);
+  else alert('❌ Erreur : ' + data.error);
 }
 
 async function eliminateNow() {

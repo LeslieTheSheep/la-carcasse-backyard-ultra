@@ -62,6 +62,19 @@ app.get('/api/leaderboard', (req, res) => res.json(db.getLeaderboard()));
 app.get('/api/runner/:name/loops', (req, res) => res.json(db.getRunnerLoops(req.params.name)));
 app.get('/api/participants', (req, res) => res.json(db.getParticipants()));
 
+// Exporter participants vers participants.json (persistance entre déploiements)
+app.post('/api/admin/export-participants', (req, res) => {
+  try {
+    const fs = require('fs');
+    const participants = db.getParticipants().map(p => ({ bib: p.bib_number, name: p.name }));
+    fs.writeFileSync(path.join(__dirname, 'participants.json'), JSON.stringify(participants, null, 2));
+    console.log(`💾 ${participants.length} participant(s) sauvegardés dans participants.json`);
+    res.json({ ok: true, count: participants.length });
+  } catch(e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 // Import participants
 app.post('/api/admin/import', (req, res) => {
   const { participants } = req.body;
@@ -177,5 +190,24 @@ app.listen(PORT, () => {
   console.log('\n💀 La Carcasse — App démarrée !');
   console.log(`👉 App   : http://localhost:${PORT}`);
   console.log(`👉 Admin : http://localhost:${PORT}/admin\n`);
+
+  // Auto-import participants.json si DB vide
+  try {
+    const fs = require('fs');
+    const participantsFile = path.join(__dirname, 'participants.json');
+    if (fs.existsSync(participantsFile)) {
+      const existing = db.getParticipants();
+      if (existing.length === 0) {
+        const participants = JSON.parse(fs.readFileSync(participantsFile, 'utf8'));
+        if (participants.length > 0) {
+          db.importParticipants(participants);
+          console.log(`✅ ${participants.length} participant(s) auto-importé(s) depuis participants.json`);
+        }
+      }
+    }
+  } catch(e) {
+    console.log('⚠️ Auto-import participants.json:', e.message);
+  }
+
   startLoopChecker();
 });

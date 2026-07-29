@@ -119,12 +119,19 @@
         <div class="stats-row" style="margin-top:14px">
           <div class="stat-box"><div class="val" id="pstat-loops">0</div><div class="lbl">Boucles</div></div>
           <div class="stat-box"><div class="val" id="pstat-km">0</div><div class="lbl">Km Total</div></div>
-          <div class="stat-box"><div class="val" id="pstat-best">--</div><div class="lbl">Meill. Boucle</div></div>
+          <div class="stat-box"><div class="val" id="pstat-pace">--</div><div class="lbl">Allure Moy.</div></div>
         </div>
-        <div class="avg-time-box" id="avg-time-box" style="display:none">
-          <div class="avg-time-label">Temps moyen</div>
-          <div class="avg-time-val" id="avg-time-val">--</div>
-          <div class="avg-time-sub">par boucle</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px" id="avg-time-box" style="display:none">
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center">
+            <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">TEMPS MOYEN</div>
+            <div id="avg-time-val" style="font-family:var(--font-title);font-size:20px;color:#fff;letter-spacing:1px">--</div>
+            <div style="font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px">par boucle</div>
+          </div>
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center">
+            <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">MEILLEUR TEMPS</div>
+            <div id="pstat-best" style="font-family:var(--font-title);font-size:20px;color:#fff;letter-spacing:1px">--</div>
+            <div style="font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px">par boucle</div>
+          </div>
         </div>
         <button class="btn btn-danger mb" id="dnf-btn" style="margin-top:4px" onclick="confirmDNF()">
           <i class="ti ti-flag-off"></i> ABANDONNER LA COURSE
@@ -504,7 +511,7 @@ async function renderProfil(){
       document.getElementById('profile-bib-name').textContent=bib+me.name;
       document.getElementById('pstat-loops').textContent=me.loops;
       document.getElementById('pstat-km').textContent=me.loops*LOOP_KM;
-      document.getElementById('pstat-best').textContent=me.best_time?fmtTimeSmall(me.best_time):'--';
+      document.getElementById('pstat-pace').textContent='--'; // mis à jour avec les loops
       const st=stateInfo(me.state);
       document.getElementById('profile-state-el').innerHTML=me.dnf?'<span class="pill" style="background:#2d1515;color:#f87171"><i class="ti ti-flag-off"></i> Abandon (DNF)</span>':`<span class="pill ${st.cls}"><i class="ti ${st.icon}"></i>${st.label}</span>`;
       const db=document.getElementById('dnf-btn');
@@ -514,8 +521,10 @@ async function renderProfil(){
       document.getElementById('profile-photo-el').innerHTML=ph?`<img src="${ph}">`:'<i class="ti ti-photo"></i>';
       if(loops.length){
         const avg=loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length;
-        document.getElementById('avg-time-box').style.display='block';
-        document.getElementById('avg-time-val').textContent=fmtTime(Math.round(avg));
+        document.getElementById('avg-time-box').style.display='grid';
+        document.getElementById('avg-time-val').textContent=fmtTimeSmall(Math.round(avg));
+        document.getElementById('pstat-best').textContent=me.best_time?fmtTimeSmall(me.best_time):'--';
+        document.getElementById('pstat-pace').textContent=pace(avg);
         document.getElementById('history-section').style.display='block';
         document.getElementById('history-list').innerHTML=loops.slice().reverse().map((l,i)=>{
           const num=loops.length-i, best=l.duration_seconds===me.best_time;
@@ -538,26 +547,37 @@ async function openDetail(name){
     const avg=loops.length?loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length:null;
     const ph=getPhoto(name,r.photo), bib=r.bib_number?`#${r.bib_number} `:'';
     let html=`
-      <!-- Ligne 1 : Photo | Nom centré | Meilleure allure blanc -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <!-- Ligne 1 : Photo | Nom centré | Icône carte — symétrique -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
         <div style="width:64px;height:64px;border-radius:8px;background:var(--card2);border:1px solid var(--border);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center">
-          ${ph?`<img src="${ph}" style="width:100%;height:100%;object-fit:cover;object-position:center top">`:' <i class="ti ti-user" style="font-size:28px;color:var(--muted)"></i>'}
+          ${ph?`<img src="${ph}" style="width:64px;height:64px;object-fit:cover;object-position:center top">`:' <i class="ti ti-user" style="font-size:28px;color:var(--muted)"></i>'}
         </div>
         <div style="flex:1;text-align:center">
           <div class="modal-runner-name">${bib}${r.name}</div>
           ${r.dnf?'<span class="dnf-badge" style="margin-top:4px;display:inline-block">DNF</span>':''}
         </div>
-        <div style="width:64px;height:64px;border-radius:8px;background:#fff;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-          <div style="font-family:var(--font-title);font-size:18px;color:#111;letter-spacing:1px">${pace(r.best_time)}</div>
-          <div style="font-size:7px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-top:2px">MEILLEURE</div>
-          <div style="font-size:7px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.06em">ALLURE</div>
+        <div style="width:64px;height:64px;border-radius:8px;background:var(--card2);border:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer" title="Carte coureur (bientôt)">
+          <i class="ti ti-id-badge-2" style="font-size:28px;color:var(--muted)"></i>
         </div>
       </div>
-      <!-- 3 boxes : Boucles | Km | Allure Moyenne (bleu) -->
-      <div class="stats-row" style="margin-bottom:12px">
+      <!-- 3 boxes bleues : Boucles | KM Total | Allure Moyenne -->
+      <div class="stats-row" style="margin-bottom:10px">
         <div class="stat-box"><div class="val">${r.loops}</div><div class="lbl">Boucles</div></div>
         <div class="stat-box"><div class="val">${r.loops*LOOP_KM}</div><div class="lbl">Km Total</div></div>
-        <div class="stat-box"><div class="val" style="font-size:18px">${r.best_time?fmtTimeSmall(r.best_time):'--'}</div><div class="lbl">Meill. Boucle</div></div>
+        <div class="stat-box"><div class="val" style="font-size:18px">${avgPace}</div><div class="lbl">Allure Moy.</div></div>
+      </div>
+      <!-- 2 boxes sombres : Temps Moyen | Meilleur Temps -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center">
+          <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">TEMPS MOYEN</div>
+          <div style="font-family:var(--font-title);font-size:20px;color:#fff;letter-spacing:1px">${avg?fmtTimeSmall(Math.round(avg)):'--'}</div>
+          <div style="font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px">par boucle</div>
+        </div>
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center">
+          <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">MEILLEUR TEMPS</div>
+          <div style="font-family:var(--font-title);font-size:20px;color:#fff;letter-spacing:1px">${bestTime}</div>
+          <div style="font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px">par boucle</div>
+        </div>
       </div>`;
     if(avg)html+=`<div class="avg-time-box" style="margin-bottom:12px"><div class="avg-time-label">Temps moyen</div><div class="avg-time-val">${fmtTime(Math.round(avg))}</div><div class="avg-time-sub">par boucle</div></div>`;
     if(loops.length){
