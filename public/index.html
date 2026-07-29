@@ -108,10 +108,10 @@
 
       <div id="profil-main" style="display:none;padding-top:8px">
         <div class="profile-photo-wrap">
-          <div class="profile-photo" id="profile-photo-el" onclick="document.getElementById('photo-input').click()">
-            <i class="ti ti-photo"></i>
+          <div id="profile-photo-el" onclick="document.getElementById('photo-input').click()" style="width:140px;height:140px;min-width:140px;min-height:140px;max-width:140px;max-height:140px;border-radius:12px;background:var(--card);border:1px solid var(--border);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto">
+            <i class="ti ti-photo" style="font-size:40px;color:var(--muted)"></i>
           </div>
-          <div class="photo-edit" onclick="document.getElementById('photo-input').click()"><i class="ti ti-camera"></i> PHOTO</div>
+          <div class="photo-edit" onclick="document.getElementById('photo-input').click()" style="position:absolute;bottom:10px;right:calc(50% - 80px);"><i class="ti ti-camera"></i> PHOTO</div>
           <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(this)">
         </div>
         <div class="profile-bib-name" id="profile-bib-name">—</div>
@@ -546,6 +546,8 @@ async function openDetail(name){
     if(!r)return;
     const avg=loops.length?loops.reduce((a,l)=>a+l.duration_seconds,0)/loops.length:null;
     const ph=getPhoto(name,r.photo), bib=r.bib_number?`#${r.bib_number} `:'';
+    const avgPace = avg ? pace(avg) : '--';
+    const bestTime = r.best_time ? fmtTimeSmall(r.best_time) : '--';
     let html=`
       <!-- Ligne 1 : Photo | Nom centré | Icône carte — symétrique -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
