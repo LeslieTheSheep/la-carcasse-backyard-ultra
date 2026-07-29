@@ -535,8 +535,12 @@ async function renderProfil(){
         document.getElementById('pstat-pace').textContent=pace(avg);
         document.getElementById('history-section').style.display='block';
         document.getElementById('history-list').innerHTML=loops.slice().reverse().map((l,i)=>{
-          const num=loops.length-i, best=l.duration_seconds===me.best_time;
-          return`<div class="history-item"><div class="history-num" style="${best?'background:var(--accent);color:#fff':''}">#${num}</div><div style="flex:1"><div class="history-time">${fmtTimeSmall(l.duration_seconds)}</div><div class="history-date">${new Date(l.end_time).toLocaleString('fr-FR')}</div></div><div class="history-pace">${pace(l.duration_seconds)}<span>min/km</span></div></div>`;
+          const num=loops.length-i;
+          return`<div class="history-item">
+            <div class="history-num" style="background:#fff;color:#111;font-size:12px">#${num}</div>
+            <div style="flex:1"><div style="font-family:var(--font-title);font-size:16px;color:#fff;letter-spacing:.5px">${fmtTimeSmall(l.duration_seconds)}</div></div>
+            <div style="font-family:var(--font-title);font-size:15px;color:#fff;text-align:right">${pace(l.duration_seconds)}<span style="display:block;font-family:var(--font-body);font-size:9px;font-weight:600;color:var(--muted)">min/km</span></div>
+          </div>`;
         }).join('');
       }
     }
@@ -567,7 +571,7 @@ async function openDetail(name){
           ${r.dnf?'<span class="dnf-badge" style="margin-top:4px;display:inline-block">DNF</span>':''}
         </div>
         <div style="width:64px;height:64px;border-radius:8px;background:var(--card2);border:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer" title="Carte coureur (bientôt)">
-          <i class="ti ti-id-badge-2" style="font-size:28px;color:var(--muted)"></i>
+          <img src="/icone-carte.svg" style="width:36px;height:36px;filter:brightness(0) invert(1);opacity:0.5">
         </div>
       </div>
       <!-- 3 boxes bleues : Boucles | KM Total | Allure Moyenne -->
@@ -576,7 +580,6 @@ async function openDetail(name){
         <div class="stat-box"><div class="val">${r.loops*LOOP_KM}</div><div class="lbl">Km Total</div></div>
         <div class="stat-box"><div class="val" style="font-size:18px">${avgPace}</div><div class="lbl">Allure Moy.</div></div>
       </div>
-      <!-- 2 boxes sombres : Temps Moyen | Meilleur Temps -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
         <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center">
           <div style="font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">TEMPS MOYEN</div>
