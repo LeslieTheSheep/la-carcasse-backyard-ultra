@@ -169,7 +169,10 @@ input[type="text"]:focus{border-color:var(--accent)}
 
 /* MODAL */
 #modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;overflow-y:auto;padding:20px}
-.modal-box{background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:440px;margin:0 auto;padding:20px}
+.modal-box{background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:440px;margin:0 auto;padding:20px;perspective:1400px}
+#modal-content{transform-style:preserve-3d;transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.card-face-wrap{width:100%;border-radius:14px;overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.55);line-height:0}
+.runner-fifa-card{width:100%;display:block;border-radius:14px}
 .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .modal-close{background:var(--card2);border:none;color:var(--muted);border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
 .modal-allure-name{display:flex;gap:12px;align-items:stretch;margin-bottom:14px}

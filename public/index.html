@@ -158,7 +158,7 @@
 <div id="modal-overlay" onclick="closeModal(event)">
   <div class="modal-box">
     <div class="modal-header">
-      <div style="font-family:var(--font-title);font-size:18px;letter-spacing:1px">DÉTAIL</div>
+      <div id="modal-title-text" style="font-family:var(--font-title);font-size:18px;letter-spacing:1px">DÉTAIL</div>
       <button class="modal-close" onclick="document.getElementById('modal-overlay').style.display='none'">✕</button>
     </div>
     <div id="modal-content"></div>
@@ -570,8 +570,8 @@ async function openDetail(name){
           <div class="modal-runner-name">${bib}${r.name}</div>
           ${r.dnf?'<span class="dnf-badge" style="margin-top:4px;display:inline-block">DNF</span>':''}
         </div>
-        <div style="width:64px;height:64px;border-radius:8px;background:var(--card2);border:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer" title="Carte coureur (bientôt)">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <div style="width:64px;height:64px;border-radius:8px;background:var(--card2);border:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer" title="Voir la carte coureur" onclick="flipToCard(${r.bib_number?r.bib_number:'null'},'${r.name.replace(/'/g,"\\'")}')">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <rect x="4" y="3" width="16" height="18" rx="2"/>
             <polygon points="12,7 13.5,10.5 17,10.5 14.5,12.7 15.5,16 12,13.8 8.5,16 9.5,12.7 7,10.5 10.5,10.5"/>
           </svg>
@@ -609,10 +609,40 @@ async function openDetail(name){
           </div>
         </div>`).join('');
     }else html+='<div class="empty-state" style="padding:20px"><p>Aucune boucle.</p></div>';
+    _modalDetailHTML=html;
     document.getElementById('modal-content').innerHTML=html;
+    const t=document.getElementById('modal-title-text');if(t)t.textContent='DÉTAIL';
   }catch(e){console.error(e);}
 }
 function closeModal(e){if(e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').style.display='none';}
+
+// FLIP CARTE COUREUR
+let _modalDetailHTML='';
+function flipPanel(update,newTitle){
+  const el=document.getElementById('modal-content');
+  if(!el)return;
+  el.style.transform='rotateY(90deg)';
+  setTimeout(()=>{
+    update();
+    const t=document.getElementById('modal-title-text');if(t)t.textContent=newTitle;
+    el.style.transform='rotateY(-90deg)';
+    el.offsetHeight;
+    el.style.transform='rotateY(0deg)';
+  },280);
+}
+function flipToCard(bib,name){
+  if(!bib)return;
+  flipPanel(()=>{
+    document.getElementById('modal-content').innerHTML=`
+      <div class="card-face-wrap">
+        <img src="/cards/card-${bib}.jpg" class="runner-fifa-card" alt="Carte ${(name||'').replace(/"/g,'&quot;')}" onerror="this.closest('.card-face-wrap').innerHTML='&lt;div class=\\'empty-state\\' style=\\'padding:40px 20px\\'&gt;&lt;p&gt;Carte indisponible&lt;/p&gt;&lt;/div&gt;'">
+      </div>
+      <div class="mode-switch" style="margin-top:14px" onclick="flipToDetail()">Retour au détail</div>`;
+  },'CARTE');
+}
+function flipToDetail(){
+  flipPanel(()=>{document.getElementById('modal-content').innerHTML=_modalDetailHTML;},'DÉTAIL');
+}
 
 // PARTICIPANTS
 async function loadParticipants(){try{allParticipants=await(await fetch('/api/participants')).json();filterParticipants('');}catch(e){}}
