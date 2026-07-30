@@ -29,7 +29,7 @@
     <div class="ob-title">IMPORTANT</div>
     <div class="ob-message-plain">Pour assurer le bon fonctionnement de l'application, merci de garder cet onglet ouvert dans votre navigateur.</div>
     <div class="ob-buttons">
-      <button class="ob-btn ob-btn-runner" onclick="selectMode('runner')"><i class="ti ti-run"></i> SÉLECTIONNER COUREUR</button>
+      <button class="ob-btn ob-btn-runner" onclick="promptPassword(RUNNER_PASSWORD,()=>selectMode('runner'),null,'MODE COUREUR')"><i class="ti ti-run"></i> SÉLECTIONNER COUREUR</button>
       <button class="ob-btn ob-btn-spectator" onclick="selectMode('spectator')"><i class="ti ti-eye"></i> MODE SPECTATEUR</button>
     </div>
   </div>
@@ -165,12 +165,52 @@
   </div>
 </div>
 
+<!-- MOT DE PASSE -->
+<div id="pwd-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;align-items:center;justify-content:center;padding:20px">
+  <div class="pwd-box" style="background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:340px;width:100%;padding:24px;text-align:center">
+    <div id="pwd-title" style="font-family:var(--font-title);font-size:18px;letter-spacing:1px;margin-bottom:14px;color:#fff">MOT DE PASSE</div>
+    <input type="password" id="pwd-input" placeholder="Mot de passe" autocomplete="off" onkeydown="if(event.key==='Enter')pwdSubmit()" style="width:100%;box-sizing:border-box;padding:12px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:#fff;font-size:16px;text-align:center;margin-bottom:8px">
+    <div id="pwd-error" style="color:#dc2626;font-size:12px;margin-bottom:12px;display:none">Mot de passe incorrect</div>
+    <div style="display:flex;gap:8px">
+      <button onclick="pwdCancel()" style="flex:1;padding:12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-weight:600;cursor:pointer;font-size:14px">Annuler</button>
+      <button onclick="pwdSubmit()" style="flex:1;padding:12px;border-radius:8px;border:none;background:#fff;color:#111;font-weight:700;cursor:pointer;font-size:14px">Valider</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const LOOP_KM=6.00, RACE_START=new Date('2026-08-01T08:00:00+02:00');
+const RUNNER_PASSWORD='01082026';
 let myName=localStorage.getItem('backyard_runner')||null;
 let myMode=localStorage.getItem('backyard_mode')||null;
 let allParticipants=[], mapInit=false;
+
+// MOT DE PASSE (réutilisable)
+let _pwdOnSuccess=null,_pwdOnCancel=null,_pwdExpected=null;
+function promptPassword(expected,onSuccess,onCancel,title){
+  _pwdExpected=expected;_pwdOnSuccess=onSuccess;_pwdOnCancel=onCancel||null;
+  document.getElementById('pwd-title').textContent=title||'MOT DE PASSE';
+  document.getElementById('pwd-input').value='';
+  document.getElementById('pwd-error').style.display='none';
+  document.getElementById('pwd-overlay').style.display='flex';
+  setTimeout(()=>document.getElementById('pwd-input').focus(),150);
+}
+function pwdSubmit(){
+  const val=document.getElementById('pwd-input').value;
+  if(val===_pwdExpected){
+    document.getElementById('pwd-overlay').style.display='none';
+    if(_pwdOnSuccess)_pwdOnSuccess();
+  }else{
+    document.getElementById('pwd-error').style.display='block';
+    document.getElementById('pwd-input').value='';
+    document.getElementById('pwd-input').focus();
+  }
+}
+function pwdCancel(){
+  document.getElementById('pwd-overlay').style.display='none';
+  if(_pwdOnCancel)_pwdOnCancel();
+}
 
 function initApp(){
   if(!localStorage.getItem('backyard_onboarded')){
@@ -205,10 +245,15 @@ function applyMode(){
 }
 function switchMode(){
   const newMode=myMode==='runner'?'spectator':'runner';
-  if(confirm('Passer en mode '+(newMode==='spectator'?'spectateur':'coureur')+' ?')){
+  if(newMode==='runner'){
+    promptPassword(RUNNER_PASSWORD,()=>{
+      myMode=newMode; localStorage.setItem('backyard_mode',newMode);
+      applyMode(); updateModeSwitchBtn();
+    },null,'MODE COUREUR');
+  }else if(confirm('Passer en mode spectateur ?')){
     myMode=newMode; localStorage.setItem('backyard_mode',newMode);
     applyMode(); updateModeSwitchBtn();
-    if(newMode==='spectator') switchTab('coureurs',document.querySelector('.nav-btn'));
+    switchTab('coureurs',document.querySelector('.nav-btn'));
   }
 }
 function updateModeSwitchBtn(){
@@ -581,7 +626,7 @@ async function openDetail(name){
       <div class="stats-row" style="margin-bottom:10px">
         <div class="stat-box"><div class="val">${r.loops}</div><div class="lbl">Boucles</div></div>
         <div class="stat-box"><div class="val">${r.loops*LOOP_KM}</div><div class="lbl">Km Total</div></div>
-        <div class="stat-box"><div class="val" style="font-size:18px">${avgPace}</div><div class="lbl">Allure Moy.</div></div>
+        <div class="stat-box"><div class="val">${avgPace}</div><div class="lbl">Allure Moy.</div></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
         <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center">

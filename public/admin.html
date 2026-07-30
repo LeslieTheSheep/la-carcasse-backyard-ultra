@@ -10,6 +10,33 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 </head>
 <body>
+
+<!-- MOT DE PASSE ADMIN -->
+<div id="admin-pwd-overlay" style="position:fixed;inset:0;background:#080810;z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:340px;width:100%;padding:24px;text-align:center">
+    <div style="font-family:var(--font-title);font-size:18px;letter-spacing:1px;margin-bottom:14px;color:#fff">ACCÈS ADMIN</div>
+    <input type="password" id="admin-pwd-input" placeholder="Mot de passe" autocomplete="off" onkeydown="if(event.key==='Enter')adminPwdSubmit()" style="width:100%;box-sizing:border-box;padding:12px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:#fff;font-size:16px;text-align:center;margin-bottom:8px">
+    <div id="admin-pwd-error" style="color:#dc2626;font-size:12px;margin-bottom:12px;display:none">Mot de passe incorrect</div>
+    <button onclick="adminPwdSubmit()" style="width:100%;padding:12px;border-radius:8px;border:none;background:#fff;color:#111;font-weight:700;cursor:pointer;font-size:14px">Valider</button>
+  </div>
+</div>
+<script>
+const ADMIN_PASSWORD='Aglnzw10cd';
+function adminPwdSubmit(){
+  const val=document.getElementById('admin-pwd-input').value;
+  if(val===ADMIN_PASSWORD){
+    sessionStorage.setItem('admin_unlocked','1');
+    document.getElementById('admin-pwd-overlay').style.display='none';
+  }else{
+    document.getElementById('admin-pwd-error').style.display='block';
+    document.getElementById('admin-pwd-input').value='';
+    document.getElementById('admin-pwd-input').focus();
+  }
+}
+if(sessionStorage.getItem('admin_unlocked')==='1'){
+  document.write('<style>#admin-pwd-overlay{display:none!important}</style>');
+}
+</script>
 <div class="admin-page">
   <div class="admin-header">
     <img src="logo.png" alt="">
